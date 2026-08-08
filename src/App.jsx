@@ -6,6 +6,7 @@ import {
   X, Search, Crown, ChevronDown, Globe,
 } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const FONT_IMPORT = `
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -1889,6 +1890,7 @@ export default function SlopeFit() {
         )}
       </div>
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
