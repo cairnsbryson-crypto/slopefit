@@ -985,27 +985,25 @@ function GearFigure({ colors, sport }) {
       {/* head */}
       <circle cx="68" cy="37" r="16" fill={skin} />
 
-      {/* goggles — a real pair has two distinct layers: a dark frame that
-          wraps fully around, and a separate lens inset inside it. A single
-          flat-colour band doesn't read as goggles no matter what colour
-          it is - the frame/lens split is what makes it recognisable. */}
-      <rect x="49" y="32" width="38" height="15" rx="7.5" fill="#161616" />
-      <rect x="52.5" y="34.5" width="31" height="10" rx="5" fill={goggles || "#3A6EA5"} />
-      {/* lens highlight, a glossy diagonal reflection */}
-      <path d="M 57 36 L 70 40.5 L 65 42.5 L 55 39 Z" fill="#FFFFFF" opacity="0.28" />
-      {/* strap, running back toward the helmet on both sides */}
-      <path d="M 49 40 Q 45 40 44 37" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M 87 40 Q 91 40 92 37" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
-
-      {/* helmet — an actual dome that fully covers the top of the head
-          down to a defined bottom rim at ear level, not a thin arc */}
+      {/* helmet — sized to cover only the crown down to just above eye
+          level, not the whole head. The previous version extended down
+          far enough to sit on top of and completely hide the goggles -
+          that was the actual bug, not a colour or detail issue. */}
       <path
-        d="M 46 43 A 22 25 0 0 1 90 43 L 90 43 Q 90 49 85 50 L 51 50 Q 46 49 46 43 Z"
+        d="M 48 34 A 20 17 0 0 1 88 34 L 88 34 Q 88 38 84 39 L 52 39 Q 48 38 48 34 Z"
         fill={helmet || "#2A2A2E"}
       />
-      {/* vent lines - a small real detail on ski/snowboard helmets */}
-      <path d="M 58 27 Q 68 24 78 27" stroke="#000000" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
-      <path d="M 56 33 Q 68 30 80 33" stroke="#000000" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
+      <path d="M 56 23 Q 68 20 80 23" stroke="#000000" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
+      <path d="M 54 28 Q 68 25 82 28" stroke="#000000" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
+
+      {/* goggles — drawn AFTER the helmet so they sit visibly on top of
+          it, right at the helmet's bottom rim. Frame + separate lens
+          inset is what actually reads as goggles rather than a flat band. */}
+      <rect x="49" y="38" width="38" height="14" rx="7" fill="#161616" />
+      <rect x="52.5" y="40.5" width="31" height="9" rx="4.5" fill={goggles || "#3A6EA5"} />
+      <path d="M 57 42 L 70 46 L 65 48 L 55 44.5 Z" fill="#FFFFFF" opacity="0.28" />
+      <path d="M 49 45 Q 45 45 44 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M 87 45 Q 91 45 92 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
     </svg>
   );
 }
