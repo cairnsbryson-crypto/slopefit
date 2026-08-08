@@ -132,9 +132,9 @@ function formatPrice(usdAmount, currencyCode) {
 }
 
 const BUDGETS = [
-  { id: "value", label: "Budget-Friendly", desc: "Solid, reliable gear without the premium tag.", maxUSD: 1000 },
-  { id: "mid", label: "Mid-Range", desc: "Balance of performance, durability, and price.", minUSD: 1000, maxUSD: 2200 },
-  { id: "premium", label: "Premium", desc: "Top-tier performance and finish, no compromises.", minUSD: 2200 },
+  { id: "value", label: "Budget-Friendly", desc: "Solid, reliable gear without the premium tag.", maxUSD: 1350 },
+  { id: "mid", label: "Mid-Range", desc: "Balance of performance, durability, and price.", minUSD: 1350, maxUSD: 2100 },
+  { id: "premium", label: "Premium", desc: "Top-tier performance and finish, no compromises.", minUSD: 2100 },
 ];
 
 const NAV_TABS = [
@@ -235,7 +235,7 @@ const SNOWBOARD_BOARDS = {
     { id: "bd10", name: "Agent", brand: "Rome", price: 550, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "moguls"], style: ["classic", "freeride"], colors: ["black"], tier: "mid" },
     { id: "bd11", name: "Banked Country", brand: "GNU", price: 600, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
     // men's
-    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black"], tier: "premium" },
+    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black"], tier: "premium", image: "https://www.burton.com/static/product/W26/106881A97DRG154_1.png?impolicy=bgwhite&imwidth=800" },
     { id: "bdm2", name: "Custom Flying V", brand: "Burton", price: 550, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["white"], tier: "mid" },
     { id: "bdm3", name: "Mercury", brand: "Capita", price: 680, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["black"], tier: "premium" },
     { id: "bdm4", name: "DOA", brand: "Capita", price: 550, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white"], tier: "mid" },
@@ -251,7 +251,7 @@ const SNOWBOARD_BOARDS = {
 
 const CATALOG = {
   skis: [
-    { id: "sm1", name: "Experience 86 Basalt (26/27)", brand: "Rossignol", price: 650, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black", "forest"], tier: "value" },
+    { id: "sm1", name: "Experience 86 Basalt (26/27)", brand: "Rossignol", price: 650, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black", "forest"], tier: "value", image: "https://www.rossignol.com/dw/image/v2/BJJZ_PRD/on/demandware.static/-/Sites-rossignol-catalog/default/dwde0c9732/images/large/RAMFQ04_EXPERIENCE_86_BASALT_OPEN_72DPI_01.jpg?sw=800" },
     { id: "sm2", name: "QST 98 (26/27)", brand: "Salomon", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["olive", "sand"], tier: "mid" },
     { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["black"], tier: "premium" },
     { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["olive", "black"], tier: "value" },
@@ -449,7 +449,7 @@ const CATALOG = {
     { id: "gr2", name: "Drift — Glacier Blue", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["sky"], tier: "value" },
     { id: "gr3", name: "Speedlane — Ice Blue Mirror", brand: "RUFE", price: 42, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["classic", "race"], colors: ["turquoise"], tier: "value" },
     { id: "g2", name: "Squad Mag Goggles", brand: "Smith", price: 210, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "g3", name: "Line Miner Prizm Goggles", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "mid" },
+    { id: "g3", name: "Line Miner Prizm Goggles", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "mid", image: "https://assets2.oakley.com/prod-onecp-record-files/pieyewear/0172b1ec-840a-4426-8b5c-b35e00f32d63/0OO7070__707013__OOE__shad__030A.png?impolicy=OO_ratio&width=800" },
     { id: "g4", name: "M4 Toric Goggles", brand: "Anon", price: 250, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "freeride"], colors: ["charcoal", "orange"], tier: "premium" },
     { id: "g5", name: "Sentry Pro Goggles", brand: "Salomon", price: 200, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["forest", "black"], tier: "mid" },
     { id: "g6", name: "Contour Goggles", brand: "Giro", price: 260, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "premium" },
@@ -487,8 +487,8 @@ function categoryLabel(key, sport) {
   if (key === "skis" && sport === "snowboard") return "Snowboard";
   return CATEGORY_LABELS[key];
 }
-const CATEGORY_ICONS = { skis: Mountain, jacket: Shirt, pants: Layers, goggles: Eye, helmet: HardHat, gloves: Hand };
 const FIT_LABELS = { slim: "Slim Fit", regular: "Regular Fit", baggy: "Relaxed / Baggy Fit" };
+const CATEGORY_ICON_FALLBACK = { jacket: Shirt, pants: Layers, goggles: Eye, helmet: HardHat, gloves: Hand };
 const GENDER_LABELS = { m: "Men's", w: "Women's", u: "Unisex" };
 const TIER_ORDER = ["value", "mid", "premium"];
 
@@ -673,7 +673,20 @@ function buildRankings(answers, sport) {
   const chosenColors = answers.colors || [];
   Object.entries(effectiveCatalog).forEach(([category, items]) => {
     const eligible = items.filter((i) => genderMatches(i, answers.gender));
-    const pool = eligible.length ? eligible : items;
+    let pool = eligible.length ? eligible : items;
+
+    // Hard budget ceiling. Tier match used to be only a scoring bonus,
+    // which meant a "Budget-Friendly" pick could still land on a premium
+    // item if it scored well on ability/terrain/style - and testing showed
+    // that happening in 100% of simulated Budget-Friendly runs, blowing
+    // past the promised total by up to 3x. Budget is now a real filter:
+    // never show anything above the selected tier, with a fallback to the
+    // unrestricted pool only if a category has nothing at or under it.
+    if (answers.budget) {
+      const budgetRank = TIER_ORDER.indexOf(answers.budget);
+      const withinBudget = pool.filter((i) => TIER_ORDER.indexOf(i.tier) <= budgetRank);
+      if (withinBudget.length) pool = withinBudget;
+    }
 
     // For skis specifically, the TYPE of ski matters more than color —
     // a black Völkl race ski or K2 all-mountain ski isn't a good answer
@@ -891,11 +904,110 @@ function SnowboardIcon({ size = 34, color = "currentColor" }) {
   );
 }
 
-/* Sport-aware icon lookup — snowboarders see an actual board for the
-   hardgood slot instead of the generic mountain used for skis. */
-function categoryIcon(key, sport) {
-  if (key === "skis") return sport === "snowboard" ? SnowboardIcon : SkiIcon;
-  return CATEGORY_ICONS[key];
+/* A stick figure wearing the full matched setup — each region filled
+   with that category's actual matched colour, so the whole look reads
+   at a glance without needing seven separate swatch tiles. Built from
+   plain rects/circles rather than freehand curves, since a figure
+   made of simple geometric primitives is far less likely to render
+   oddly than hand-tuned bezier paths. */
+function GearFigure({ colors, sport }) {
+  const { helmet, goggles, jacket, gloves, pants, skis } = colors;
+  const skin = "#C4B5A0";
+  const neutral = "#6B6B70";
+  return (
+    <svg viewBox="0 0 152 260" width="100%" height="250" style={{ maxWidth: 185 }}>
+      {/* skis / board — vertical beside the body, roughly where the raised
+          hand grips them. Tips sit at eye level (matching the head at
+          cy=37) rather than towering above the head. Both are noticeably
+          thicker now — a real ski/board reads as a solid plank, not a thin
+          line. Skis get curved upturned tips and a boot binding detail;
+          the snowboard gets angled binding straps, so the two sports
+          actually look distinct from each other. */}
+      {sport === "snowboard" ? (
+        <>
+          <rect x="102" y="36" width="30" height="203" rx="12" fill={neutral} opacity="0.85" />
+          {/* binding straps, angled like a real stance */}
+          <rect x="96" y="94" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 98)" />
+          <rect x="96" y="172" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 176)" />
+        </>
+      ) : (
+        <>
+          {/* left ski — thicker body, tip at eye level */}
+          <path d="M 96 58 Q 96 40 107 36 Q 118 40 118 58 L 117 233 Q 117 239 107 239 Q 97 239 96 233 Z" fill={neutral} opacity="0.85" />
+          <rect x="94" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
+          {/* right ski */}
+          <path d="M 120 58 Q 120 40 131 36 Q 142 40 142 58 L 141 233 Q 141 239 131 239 Q 121 239 120 233 Z" fill={neutral} opacity="0.85" />
+          <rect x="118" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
+        </>
+      )}
+
+      {/* legs — thick rounded-cap strokes function as filled pant legs with
+          real volume, not thin lines. Slightly offset from each other for a
+          natural weight-bearing stance. */}
+      <path d="M 56 138 Q 53 165 54 188 Q 53 212 52 230" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
+      <path d="M 80 138 Q 82 163 83 186 Q 84 210 84 228" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
+
+      {/* ski boots — angled, chunky, filled, rounded corners instead of
+          sharp trapezoid points */}
+      <path d="M 45 227 Q 41 227 41 231 L 39 238 Q 39 240 41 240 L 63 240 Q 65 240 65 238 L 63 231 Q 63 227 59 227 Z" fill={neutral} />
+      <path d="M 77 225 Q 73 225 73 229 L 71 236 Q 71 238 73 238 L 95 238 Q 97 238 97 236 L 95 229 Q 95 225 91 225 Z" fill={neutral} />
+
+      {/* torso — filled jacket silhouette: wide shoulders, tapered waist,
+          slight flare at the hem */}
+      <path
+        d="M 44 66 Q 39 71 41 82 Q 44 102 47 118 Q 47.5 130 48 140 L 88 140 Q 88.5 130 89 118 Q 92 102 95 82 Q 97 71 92 66 Q 80 60 68 60 Q 56 60 44 66 Z"
+        fill={jacket || neutral}
+      />
+      {/* center zipper — a single line down the front reads as "jacket"
+          much more than a plain filled shape does */}
+      <line x1="68" y1="64" x2="68" y2="138" stroke="#000000" strokeWidth="1.5" opacity="0.25" />
+      {/* chest pocket detail */}
+      <rect x="73" y="90" width="14" height="10" rx="4" fill="#000000" opacity="0.12" />
+
+      {/* left arm — upper arm and forearm as two thick rounded-cap strokes
+          meeting at an elbow angle, reading as a real sleeve with a bend
+          rather than one thin line */}
+      <path d="M 46 72 Q 36 86 36 102" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
+      <path d="M 36 102 Q 36 118 39 130" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
+      <rect x="30" y="126" width="16" height="14" rx="6" fill={gloves || neutral} />
+
+      {/* right arm — raised and bent at the elbow to grip the ski/board */}
+      <path d="M 90 72 Q 100 66 105 59" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
+      <path d="M 105 59 L 103 42" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
+      <rect x="96" y="34" width="16" height="14" rx="6" fill={gloves || neutral} />
+
+      {/* hood, bunched at the collar under the helmet */}
+      <path d="M 50 62 Q 68 76 86 62 L 86 68 Q 68 82 50 68 Z" fill={jacket || neutral} opacity="0.9" />
+
+      {/* neck */}
+      <rect x="62" y="50" width="12" height="14" rx="4" fill={skin} />
+
+      {/* head */}
+      <circle cx="68" cy="37" r="16" fill={skin} />
+
+      {/* goggles — a real pair has two distinct layers: a dark frame that
+          wraps fully around, and a separate lens inset inside it. A single
+          flat-colour band doesn't read as goggles no matter what colour
+          it is - the frame/lens split is what makes it recognisable. */}
+      <rect x="49" y="32" width="38" height="15" rx="7.5" fill="#161616" />
+      <rect x="52.5" y="34.5" width="31" height="10" rx="5" fill={goggles || "#3A6EA5"} />
+      {/* lens highlight, a glossy diagonal reflection */}
+      <path d="M 57 36 L 70 40.5 L 65 42.5 L 55 39 Z" fill="#FFFFFF" opacity="0.28" />
+      {/* strap, running back toward the helmet on both sides */}
+      <path d="M 49 40 Q 45 40 44 37" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M 87 40 Q 91 40 92 37" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
+
+      {/* helmet — an actual dome that fully covers the top of the head
+          down to a defined bottom rim at ear level, not a thin arc */}
+      <path
+        d="M 46 43 A 22 25 0 0 1 90 43 L 90 43 Q 90 49 85 50 L 51 50 Q 46 49 46 43 Z"
+        fill={helmet || "#2A2A2E"}
+      />
+      {/* vent lines - a small real detail on ski/snowboard helmets */}
+      <path d="M 58 27 Q 68 24 78 27" stroke="#000000" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
+      <path d="M 56 33 Q 68 30 80 33" stroke="#000000" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
 }
 
 function SkierMarker({ sport }) {
@@ -1566,6 +1678,27 @@ export default function SlopeFit() {
                 const pct = matchPercent(item, category, answers, fit, pantFit);
                 return (
                   <div key={category} className="rounded-xl border border-white/16 bg-white/[0.04] backdrop-blur-sm p-5 flex flex-col gap-3 hover:border-white/35 hover:bg-white/[0.07] transition-colors">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={`${item.brand} ${item.name}`}
+                        className="w-full aspect-[4/3] object-cover rounded-lg border border-white/15 bg-black/20"
+                        loading="lazy"
+                        onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling.style.display = "flex"; }}
+                      />
+                    ) : null}
+                    {!item.image && (() => {
+                      const chosen = answers.colors || [];
+                      const overlap = item.colors.filter((c) => chosen.includes(c));
+                      const primaryId = overlap[0] || item.colors[0];
+                      const primary = colorById[primaryId];
+                      const Icon = CATEGORY_ICON_FALLBACK[category] || (category === "skis" ? (sport === "snowboard" ? SnowboardIcon : SkiIcon) : Shirt);
+                      return (
+                        <div className="w-full aspect-[4/3] rounded-lg border border-white/15 flex items-center justify-center" style={{ backgroundColor: primary?.hex || "#2A2A2E" }}>
+                          <Icon size={32} color={primary?.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={1.8} />
+                        </div>
+                      );
+                    })()}
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <span className="text-xs uppercase tracking-widest text-white/45 font-semibold block">
@@ -1633,31 +1766,33 @@ export default function SlopeFit() {
 
             <div className="mb-8">
               <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-3">Your look, at a glance</p>
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-2.5">
-                {Object.entries(setup).map(([category, item]) => {
-                  if (!item) return null;
+              {(() => {
+                const resolvedColors = {};
+                Object.entries(setup).forEach(([category, item]) => {
+                  if (!item) return;
                   const chosen = answers.colors || [];
                   const overlap = item.colors.filter((c) => chosen.includes(c));
                   const primaryId = overlap[0] || item.colors[0];
                   const primary = colorById[primaryId];
-                  const Icon = categoryIcon(category, sport);
-                  if (!primary || !Icon) return null;
-                  return (
-                    <div key={category} className="flex flex-col items-center gap-1.5">
-                      <div
-                        className="w-full aspect-square rounded-xl border border-white/25 flex items-center justify-center"
-                        style={{ backgroundColor: primary.hex }}
-                        title={`${categoryLabel(category, sport)}: ${primary.label}`}
-                      >
-                        <Icon size={20} color={primary.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={2.2} />
-                      </div>
-                      <span className="text-[9px] uppercase tracking-wide text-white/40 font-semibold text-center leading-tight">
-                        {categoryLabel(category, sport)}
-                      </span>
+                  if (primary) resolvedColors[category] = primary.hex;
+                });
+                return (
+                  <div className="rounded-xl border border-white/18 bg-white/[0.03] py-6 flex flex-col items-center">
+                    <GearFigure colors={resolvedColors} sport={sport} />
+                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-4 px-4">
+                      {Object.entries(setup).map(([category, item]) => {
+                        if (!item || !resolvedColors[category]) return null;
+                        return (
+                          <span key={category} className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-white/45 font-semibold">
+                            <span className="w-2.5 h-2.5 rounded-full border border-white/40 flex-shrink-0" style={{ backgroundColor: resolvedColors[category] }} />
+                            {categoryLabel(category, sport)}
+                          </span>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })()}
               <p className="text-[11px] text-white/30 mt-3 leading-relaxed">
                 Rendered straight from each item's matched color, not a stock photo — so it can't drift from what's listed above.
               </p>
