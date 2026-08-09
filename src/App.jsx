@@ -5,8 +5,7 @@ import {
   User, Users, ChevronRight, ChevronLeft, ShoppingBag, RotateCcw, Lock, Check,
   X, Search, Crown, ChevronDown, Globe,
 } from "lucide-react";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import { supabase } from "./supabaseClient";
 
 const FONT_IMPORT = `
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -1172,6 +1171,9 @@ export default function SlopeFit() {
   const [currency, setCurrency] = useState("CAD");
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const [clickedPlan, setClickedPlan] = useState(null);
+  const [user, setUser] = useState(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error"
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({ terrain: [], style: [], colors: [] });
   const [picks, setPicks] = useState({});
@@ -1180,6 +1182,33 @@ export default function SlopeFit() {
   const currentKey = STEPS[stepIndex];
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [stepIndex, phase]);
+
+  // Check for an existing logged-in session on load, and keep `user` in
+  // sync any time someone signs in or out - including the moment they
+  // click a magic link and land back on the site.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  async function sendMagicLink(e) {
+    e.preventDefault();
+    if (!authEmail) return;
+    setAuthStatus("sending");
+    const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
+    setAuthStatus(error ? "error" : "sent");
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setAuthEmail("");
+    setAuthStatus(null);
+  }
 
   function chooseSport(s) {
     setSport(s);
@@ -1831,9 +1860,47 @@ export default function SlopeFit() {
 
             <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Go further with</p>
             <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-4">SlopeFit Premium</h1>
-            <p className="text-base text-white/55 max-w-md mb-10 leading-relaxed">
+            <p className="text-base text-white/55 max-w-md mb-6 leading-relaxed">
               Everything in the free fit check, plus the tools to actually dial in and save your setup.
             </p>
+
+            <div className="rounded-xl border border-white/18 bg-white/[0.04] p-5 mb-10">
+              {user ? (
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <span className="text-sm text-white/70">
+                    Signed in as <span className="text-white font-semibold">{user.email}</span>
+                  </span>
+                  <button onClick={signOut} className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors">
+                    Sign out
+                  </button>
+                </div>
+              ) : authStatus === "sent" ? (
+                <p className="text-sm text-white/70">
+                  Check <span className="text-white font-semibold">{authEmail}</span> for a sign-in link.
+                </p>
+              ) : (
+                <form onSubmit={sendMagicLink} className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@email.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="flex-1 bg-transparent border border-white/25 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-white transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={authStatus === "sending"}
+                    className="bg-white text-black text-sm font-semibold uppercase tracking-wide px-5 py-2.5 rounded-lg hover:bg-white/85 transition-colors disabled:opacity-60 flex-shrink-0"
+                  >
+                    {authStatus === "sending" ? "Sending..." : "Sign in to continue"}
+                  </button>
+                </form>
+              )}
+              {authStatus === "error" && (
+                <p className="text-xs text-red-400 mt-2">Something went wrong sending that link — try again.</p>
+              )}
+            </div>
 
             <div className="grid sm:grid-cols-2 gap-4 mb-10">
               {PREMIUM_PLANS.map((plan) => (
@@ -1889,8 +1956,6 @@ export default function SlopeFit() {
           </div>
         )}
       </div>
-      <Analytics />
-      <SpeedInsights />
     </div>
   );
 }
