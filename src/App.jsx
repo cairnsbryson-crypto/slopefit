@@ -1020,41 +1020,49 @@ function SkierMarker({ sport }) {
   if (sport === "snowboard") {
     return (
       <svg viewBox="0 0 24 24" width="26" height="26" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.9))" }}>
-        {/* single wide board underfoot, no poles - side-on snowboard stance */}
-        <rect x="2.5" y="17.6" width="16" height="2.1" rx="1.05" fill="white" transform="rotate(-9 10.5 18.65)" />
-        {/* crouched body, one continuous filled curve */}
+        {/* board, grabbed and angled mid-air rather than lying flat -
+            reads as an actual jump instead of a standing stance */}
+        <rect x="9.5" y="12.6" width="13.5" height="2.2" rx="1.1" fill="white" transform="rotate(38 16.25 13.7)" />
+        {/* compact knees-up body, tucked for the grab */}
         <path
-          d="M14.6 7.6
-             C16.1 7.6 16.9 9 16 10.6
-             C14.6 13.1 11.7 16 8.1 17.8
-             C7 18.3 5.9 17.5 6.6 16.4
-             C8.9 13.1 11.5 10.2 13.4 8.1
-             C13.7 7.8 14.1 7.6 14.6 7.6 Z"
+          d="M13.2 4.8
+             C15.2 4.5 16.8 6.2 16.2 8.2
+             C15.5 10.6 13.4 12.7 10.7 13.8
+             C9.2 14.4 7.9 13.1 8.9 11.7
+             C10.5 9.4 11.9 6.9 12.2 5.6
+             C12.3 5.2 12.7 4.9 13.2 4.8 Z"
           fill="white"
         />
+        {/* reaching arm, down to the grab */}
+        <path d="M10.8 10 L8.6 13.2" stroke="white" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+        {/* extended arm, out for balance */}
+        <path d="M14.6 6 L19.2 4.3" stroke="white" strokeWidth="1.3" fill="none" strokeLinecap="round" />
         {/* head */}
-        <circle cx="15.3" cy="5.2" r="2.15" fill="white" />
+        <circle cx="14" cy="4" r="2.1" fill="white" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" width="26" height="26" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.9))" }}>
-      {/* skis — two parallel bars, tuck position (was a single ski before) */}
-      <rect x="2" y="19.3" width="15.5" height="1.4" rx="0.7" fill="white" transform="rotate(-9 9.75 20)" />
-      <rect x="2.4" y="17.5" width="15.5" height="1.4" rx="0.7" fill="white" transform="rotate(-9 10.15 18.2)" opacity="0.88" />
-      {/* tucked body — one smooth filled curve, no separate limb segments to misalign */}
+      {/* skis - steeper angle than before for a real downhill lean,
+          plus a couple of short spray flecks at the tips */}
+      <rect x="1" y="18.6" width="17.5" height="1.5" rx="0.75" fill="white" transform="rotate(-17 9.75 19.35)" />
+      <rect x="1.4" y="16.6" width="17.5" height="1.5" rx="0.75" fill="white" transform="rotate(-17 10.15 17.35)" opacity="0.88" />
+      <path d="M1.5 20.2 L0 21.4 M2.6 21.8 L1.3 23.1" stroke="white" strokeWidth="0.9" opacity="0.5" strokeLinecap="round" />
+      {/* compact, aggressively tucked body - shorter and more hunched
+          than a standing lean, reading as speed rather than a static pose */}
       <path
-        d="M14.6 7.6
-           C16.1 7.6 16.9 9 16 10.6
-           C14.6 13.1 11.7 16 8.1 17.8
-           C7 18.3 5.9 17.5 6.6 16.4
-           C8.9 13.1 11.5 10.2 13.4 8.1
-           C13.7 7.8 14.1 7.6 14.6 7.6 Z"
+        d="M15.8 6.2
+           C17.6 6.5 18.2 8.5 16.9 10
+           C14.8 12.4 11.6 14.6 8.2 16
+           C7 16.5 6.1 15.4 7 14.3
+           C9.6 11.1 12.6 8.2 14.7 6.5
+           C15.1 6.2 15.5 6.1 15.8 6.2 Z"
         fill="white"
       />
-      {/* arm + pole, one continuous stroke */}
+      {/* front arm + pole, reaching low and forward like a racing tuck */}
       <path
-        d="M13.5 9.5 L17.7 7.8 L19.6 11.1"
+        d="M12.8 9.2 L18.6 6.9 L20.8 10.2"
         stroke="white"
         strokeWidth="1.2"
         fill="none"
@@ -1062,8 +1070,8 @@ function SkierMarker({ sport }) {
         strokeLinejoin="round"
         opacity="0.9"
       />
-      {/* head */}
-      <circle cx="15.3" cy="5.2" r="2.15" fill="white" />
+      {/* head, tucked low and forward of the body mass */}
+      <circle cx="17" cy="4.6" r="2.1" fill="white" />
     </svg>
   );
 }
@@ -1152,17 +1160,28 @@ function Swatch({ color, selected, disabled, onClick }) {
   );
 }
 
-function MountainHero() {
+function MountainHero({ sport }) {
   return (
     <div className="relative w-full h-[400px] overflow-hidden">
-      <svg viewBox="0 0 220 110" className="absolute bottom-6 right-[6%] w-[170px] sm:w-[210px] h-[95px] opacity-90">
-        <polygon points="0,110 55,110 150,28 138,20 0,96" fill="white" opacity="0.9" />
-        <g transform="translate(160,20) rotate(-18)">
-          <line x1="-14" y1="0" x2="14" y2="0" stroke="white" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="0" cy="-9" r="6" fill="white" />
-          <line x1="0" y1="-3" x2="0" y2="6" stroke="white" strokeWidth="3" strokeLinecap="round" />
-        </g>
-      </svg>
+      <style>{`
+        @keyframes slopefitDescend {
+          0%   { left: 78%; top: 8%; }
+          100% { left: 4%;  top: 62%; }
+        }
+      `}</style>
+      {/* A small figure slowly descending the slope - reuses the same
+          refined, sport-aware icon from the quiz progress bar rather than
+          a separate one-off shape. Flipped horizontally so it faces and
+          travels down-left, matching the direction of the run. */}
+      <div
+        className="absolute"
+        style={{
+          animation: "slopefitDescend 16s linear infinite",
+          transform: "scaleX(-1)",
+        }}
+      >
+        <SkierMarker sport={sport} />
+      </div>
     </div>
   );
 }
@@ -1426,7 +1445,7 @@ export default function SlopeFit() {
 
       {phase === "intro" && (
         <div id="home" className="relative">
-          <MountainHero />
+          <MountainHero sport={sport} />
           <div className="absolute inset-0 flex flex-col justify-end">
             <div className="max-w-3xl mx-auto px-6 pb-9 w-full">
               <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">{sport === "snowboard" ? "Eight questions" : "Seven questions"}. One coordinated setup.</p>
