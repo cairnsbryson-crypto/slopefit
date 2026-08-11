@@ -1192,10 +1192,20 @@ export default function SlopeFit() {
 
   // Check for an existing logged-in session on load, and keep `user` in
   // sync any time someone signs in or out - including the moment they
-  // click a magic link and land back on the site.
+  // click a magic link and land back on the site. If they were on the
+  // Premium page when they requested the link, send them back there
+  // instead of dumping them at sport-select - clicking a sign-in link
+  // shouldn't undo their progress through the app.
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user && localStorage.getItem("slopefit_return_to_premium")) {
+        const savedSport = localStorage.getItem("slopefit_sport");
+        if (savedSport) setSport(savedSport);
+        setPhase("premium");
+        localStorage.removeItem("slopefit_return_to_premium");
+        localStorage.removeItem("slopefit_sport");
+      }
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
@@ -1207,6 +1217,8 @@ export default function SlopeFit() {
     e.preventDefault();
     if (!authEmail) return;
     setAuthStatus("sending");
+    localStorage.setItem("slopefit_return_to_premium", "true");
+    if (sport) localStorage.setItem("slopefit_sport", sport);
     const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
     setAuthStatus(error ? "error" : "sent");
   }
