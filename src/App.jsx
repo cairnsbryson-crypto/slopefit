@@ -1176,6 +1176,7 @@ export default function SlopeFit() {
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const [clickedPlan, setClickedPlan] = useState(null);
   const [user, setUser] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error"
   const [stepIndex, setStepIndex] = useState(0);
@@ -1209,6 +1210,25 @@ export default function SlopeFit() {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  // Whenever the logged-in user changes, check their actual premium
+  // status from the profiles table - this is the one flag every
+  // premium-gated feature in the app checks. Cleared immediately on
+  // sign-out so a stale "premium" state can't linger after logging out.
+  useEffect(() => {
+    if (!user) {
+      setIsPremium(false);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) setIsPremium(!!data.is_premium);
+      });
+  }, [user]);
 
   async function sendMagicLink(e) {
     e.preventDefault();
@@ -1296,7 +1316,7 @@ export default function SlopeFit() {
   const swap = (cat) =>
     setPicks((p) => {
       const used = p[cat] ?? 0;
-      if (used >= 1) return p; // one free re-search per item; more is a Premium feature
+      if (!isPremium && used >= 1) return p; // one free re-search per item for everyone else - unlimited for Premium
       return { ...p, [cat]: (used + 1) % (rankings[cat]?.length || 1) };
     });
 
@@ -1793,7 +1813,7 @@ export default function SlopeFit() {
                         <ShoppingBag size={15} /> Shop
                       </a>
                       {listLen > 1 && (
-                        (picks[category] ?? 0) >= 1 ? (
+                        !isPremium && (picks[category] ?? 0) >= 1 ? (
                           <button onClick={goToPremium} title="Unlock unlimited Search Again with Premium" className="px-3 flex items-center justify-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-white/60 border border-white/20 rounded-lg py-2 hover:border-white/60 hover:text-white transition-colors">
                             <Lock size={13} /> Premium
                           </button>
@@ -1883,8 +1903,13 @@ export default function SlopeFit() {
             <div className="rounded-xl border border-white/18 bg-white/[0.04] p-5 mb-10">
               {user ? (
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <span className="text-sm text-white/70">
+                  <span className="text-sm text-white/70 flex items-center gap-2">
                     Signed in as <span className="text-white font-semibold">{user.email}</span>
+                    {isPremium ? (
+                      <span className="text-xs uppercase tracking-widest font-bold text-white bg-white/15 border border-white/30 rounded-full px-2 py-0.5">Premium</span>
+                    ) : (
+                      <span className="text-xs uppercase tracking-widest font-semibold text-white/40">Free</span>
+                    )}
                   </span>
                   <button onClick={signOut} className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors">
                     Sign out
