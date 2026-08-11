@@ -1226,7 +1226,12 @@ export default function SlopeFit() {
       .eq("id", user.id)
       .single()
       .then(({ data, error }) => {
-        if (!error && data) setIsPremium(!!data.is_premium);
+        if (error) {
+          console.error("Failed to fetch premium status:", error.message, error);
+          setIsPremium(false);
+        } else if (data) {
+          setIsPremium(!!data.is_premium);
+        }
       });
   }, [user]);
 
