@@ -1161,29 +1161,7 @@ function Swatch({ color, selected, disabled, onClick }) {
 }
 
 function MountainHero({ sport }) {
-  return (
-    <div className="relative w-full h-[400px] overflow-hidden">
-      <style>{`
-        @keyframes slopefitDescend {
-          0%   { left: 78%; top: 8%; }
-          100% { left: 4%;  top: 62%; }
-        }
-      `}</style>
-      {/* A small figure slowly descending the slope - reuses the same
-          refined, sport-aware icon from the quiz progress bar rather than
-          a separate one-off shape. Flipped horizontally so it faces and
-          travels down-left, matching the direction of the run. */}
-      <div
-        className="absolute"
-        style={{
-          animation: "slopefitDescend 16s linear infinite",
-          transform: "scaleX(-1)",
-        }}
-      >
-        <SkierMarker sport={sport} />
-      </div>
-    </div>
-  );
+  return <div className="relative w-full h-[400px] overflow-hidden" />;
 }
 
 function Chip({ children }) {
