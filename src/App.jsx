@@ -167,19 +167,7 @@ const PREMIUM_FEATURES = [
   },
   {
     title: "Save & share your setups",
-    desc: "Keep unlimited setups on your account instead of losing everything on refresh, build separate profiles for everyone you shop for, and send any setup as a link so your crew can see exactly what you're running.",
-  },
-  {
-    title: "Custom sizing override",
-    desc: "Our ski and board lengths come from your height, weight, ability and terrain — but if you already know you ride longer or shorter than the chart says, override it and every recommendation re-sorts around your number.",
-  },
-  {
-    title: "Price-drop & restock alerts",
-    desc: "Gear in your saved setups gets watched automatically. We'll tell you the moment something goes on sale or a sold-out size comes back, so you're not checking six retailer pages yourself every week.",
-  },
-  {
-    title: "Early access & stylist review",
-    desc: "See new brands and colourways the week we add them, before they hit the free tier — plus request a personal once-over of your setup from someone who actually rides, before you spend a few thousand dollars on it.",
+    desc: "Keep your setups on your account instead of losing everything on refresh, and send any setup as a link so your crew can see exactly what you're running.",
   },
 ];
 
@@ -258,6 +246,7 @@ const CATALOG = {
     { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["olive", "black"], tier: "value" },
     { id: "sm3", name: "ARV 94 (26/27)", brand: "Armada", price: 600, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black", "white"], tier: "value" },
     { id: "sm4", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
+    { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "value" },
     { id: "sm5", name: "Bent 100 (26/27)", brand: "Atomic", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["olive", "sand"], tier: "mid" },
     { id: "sm6", name: "Blade Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["red", "charcoal"], tier: "premium" },
     { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
@@ -268,6 +257,7 @@ const CATALOG = {
     { id: "sm17", name: "ARV 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm18", name: "ARV 106 Ti (26/27)", brand: "Armada", price: 560, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
     { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange", "purple"], tier: "value" },
+    { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["teal", "lime"], tier: "mid" },
     { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black", "white"], tier: "premium" },
     { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["black", "forest"], tier: "mid" },
@@ -1175,6 +1165,10 @@ export default function SlopeFit() {
   const [currency, setCurrency] = useState("CAD");
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const [clickedPlan, setClickedPlan] = useState(null);
+  const [units, setUnits] = useState("metric");
+  const [feet, setFeet] = useState("");
+  const [inches, setInches] = useState("");
+  const [pounds, setPounds] = useState("");
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
@@ -1306,6 +1300,31 @@ export default function SlopeFit() {
       return { ...p, colors: [...arr, id] };
     });
   const updateMeasure = (k, v) => setAnswers((p) => ({ ...p, [k]: v === "" ? undefined : Number(v) }));
+
+  // Imperial entries convert straight into the metric values everything
+  // downstream already expects, so no sizing calculation had to change.
+  useEffect(() => {
+    if (units !== "imperial") return;
+    const ft = Number(feet);
+    const inch = Number(inches) || 0;
+    if (!ft) {
+      setAnswers((p) => ({ ...p, heightCm: undefined }));
+      return;
+    }
+    const cm = Math.round((ft * 12 + inch) * 2.54);
+    setAnswers((p) => ({ ...p, heightCm: cm }));
+  }, [feet, inches, units]);
+
+  useEffect(() => {
+    if (units !== "imperial") return;
+    const lb = Number(pounds);
+    if (!lb) {
+      setAnswers((p) => ({ ...p, weightKg: undefined }));
+      return;
+    }
+    setAnswers((p) => ({ ...p, weightKg: Math.round(lb * 0.453592) }));
+  }, [pounds, units]);
+
 
   function next() {
     if (stepIndex < STEPS.length - 1) setStepIndex(stepIndex + 1);
@@ -1621,16 +1640,61 @@ export default function SlopeFit() {
                     ? "Height and weight size your board length."
                     : "Height and weight size your ski length and lean the cut slimmer or baggier."}
                 </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
-                    <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Ruler size={15} /> Height (cm)</span>
-                    <input type="number" inputMode="numeric" min={100} max={230} placeholder="e.g. 175" value={answers.heightCm ?? ""} onChange={(e) => updateMeasure("heightCm", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
-                  </label>
-                  <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
-                    <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Shirt size={15} /> Weight (kg)</span>
-                    <input type="number" inputMode="numeric" min={30} max={200} placeholder="e.g. 72" value={answers.weightKg ?? ""} onChange={(e) => updateMeasure("weightKg", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
-                  </label>
+
+                {/* Unit toggle. Values are always stored in cm/kg internally
+                    so every sizing calculation downstream is untouched -
+                    imperial entries are converted on the way in. */}
+                <div className="inline-flex rounded-lg border border-white/20 overflow-hidden mb-5">
+                  {[
+                    { id: "metric", label: "cm / kg" },
+                    { id: "imperial", label: "ft·in / lb" },
+                  ].map((u) => (
+                    <button
+                      key={u.id}
+                      onClick={() => setUnits(u.id)}
+                      className={`px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors ${
+                        units === u.id ? "bg-white text-black" : "text-white/50 hover:text-white"
+                      }`}
+                    >
+                      {u.label}
+                    </button>
+                  ))}
                 </div>
+
+                {units === "metric" ? (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Ruler size={15} /> Height (cm)</span>
+                      <input type="number" inputMode="numeric" min={100} max={230} placeholder="e.g. 175" value={answers.heightCm ?? ""} onChange={(e) => updateMeasure("heightCm", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                    </label>
+                    <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Shirt size={15} /> Weight (kg)</span>
+                      <input type="number" inputMode="numeric" min={30} max={200} placeholder="e.g. 72" value={answers.weightKg ?? ""} onChange={(e) => updateMeasure("weightKg", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Ruler size={15} /> Height</span>
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1">
+                          <input type="number" inputMode="numeric" min={3} max={7} placeholder="5" value={feet} onChange={(e) => setFeet(e.target.value)} className="w-full bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                          <span className="text-[10px] uppercase tracking-widest text-white/35 font-semibold">ft</span>
+                        </div>
+                        <div className="flex-1">
+                          <input type="number" inputMode="numeric" min={0} max={11} placeholder="9" value={inches} onChange={(e) => setInches(e.target.value)} className="w-full bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                          <span className="text-[10px] uppercase tracking-widest text-white/35 font-semibold">in</span>
+                        </div>
+                      </div>
+                      {answers.heightCm && <span className="text-[11px] text-white/35">= {answers.heightCm} cm</span>}
+                    </div>
+                    <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
+                      <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Shirt size={15} /> Weight (lb)</span>
+                      <input type="number" inputMode="numeric" min={66} max={440} placeholder="e.g. 160" value={pounds} onChange={(e) => setPounds(e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                      {answers.weightKg && <span className="text-[11px] text-white/35">= {answers.weightKg} kg</span>}
+                    </label>
+                  </div>
+                )}
                 <p className="text-xs text-white/35 mt-4">Used only to size your gear. Nothing is stored or shared.</p>
               </div>
             )}
