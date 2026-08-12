@@ -441,6 +441,14 @@ const CATALOG = {
   ],
   goggles: [
     { id: "g1", name: "Helix 2.0 Goggles", brand: "Anon", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
+    { id: "g9", name: "Squad ChromaPop Goggles", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["black"], tier: "value" },
+    { id: "g10", name: "Squad ChromaPop Goggles — White", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
+    { id: "g11", name: "Line Miner Prizm Goggles — Black", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
+    { id: "g12", name: "Comp Goggles", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black"], tier: "value" },
+    { id: "g13", name: "Revolt Goggles", brand: "Giro", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
+    { id: "g14", name: "M5 Goggles", brand: "Anon", price: 300, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
+    { id: "g15", name: "PRO OTG Goggles", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
+    { id: "g16", name: "PRO OTG Goggles — White", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value" },
     { id: "gr1", name: "Drift — Pure Silver", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["silver"], tier: "value" },
     { id: "gr2", name: "Drift — Glacier Blue", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["sky"], tier: "value" },
     { id: "gr3", name: "Speedlane — Ice Blue Mirror", brand: "RUFE", price: 42, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["classic", "race"], colors: ["turquoise"], tier: "value" },
@@ -711,7 +719,20 @@ function buildRankings(answers, sport) {
           i.customizable ||
           (i.colors.length > 0 && i.colors.every((c) => chosenColors.includes(c)))
       );
-      if (exactMatches.length) workingPool = exactMatches;
+      if (exactMatches.length) {
+        if (category === "skis") {
+          // Skis are looser on colour than clothing on purpose. A ski
+          // topsheet that isn't a perfect palette match still looks fine
+          // underfoot, and the strict filter was collapsing the pool to
+          // 3-4 options - meaning Search Again kept returning the same
+          // couple of skis. Exact matches still rank first; everything
+          // else just follows behind instead of being thrown away.
+          const rest = workingPool.filter((i) => !exactMatches.includes(i));
+          workingPool = [...exactMatches, ...rest];
+        } else {
+          workingPool = exactMatches;
+        }
+      }
     }
 
     // When more than one color is picked, don't let a solo-black item
@@ -723,7 +744,7 @@ function buildRankings(answers, sport) {
     // outfit colour-variety step below can reach a different shade
     // even when every best-coverage item is the same two-tone combo.
     const preCoveragePool = [...workingPool];
-    if (chosenColors.length > 1 && workingPool.length) {
+    if (chosenColors.length > 1 && workingPool.length && category !== "skis") {
       const coverage = (i) =>
         i.customizable ? chosenColors.length : i.colors.filter((c) => chosenColors.includes(c)).length;
       const bestCoverage = Math.max(...workingPool.map(coverage));
