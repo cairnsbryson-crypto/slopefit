@@ -1186,6 +1186,7 @@ export default function SlopeFit() {
   const [currency, setCurrency] = useState("CAD");
   const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   const [clickedPlan, setClickedPlan] = useState(null);
+  const [compareMode, setCompareMode] = useState(false);
   const [units, setUnits] = useState("metric");
   const [feet, setFeet] = useState("");
   const [inches, setInches] = useState("");
@@ -1820,6 +1821,93 @@ export default function SlopeFit() {
               </div>
             </div>
 
+            {/* Compare mode toggle. Premium unlocks a side-by-side view of
+                the top three matches per category instead of just the one
+                pick - everything it needs (the full ranked list, match
+                scores) already existed, it just wasn't being shown. */}
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <p className="text-xs uppercase tracking-widest text-white/40 font-semibold">
+                {compareMode && isPremium ? "Top 3 per category" : "Your setup"}
+              </p>
+              {isPremium ? (
+                <button
+                  onClick={() => setCompareMode((v) => !v)}
+                  className={`text-xs uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg border transition-colors ${
+                    compareMode
+                      ? "bg-white text-black border-white"
+                      : "text-white/60 border-white/25 hover:border-white/60 hover:text-white"
+                  }`}
+                >
+                  {compareMode ? "Exit compare" : "Compare mode"}
+                </button>
+              ) : (
+                <button
+                  onClick={goToPremium}
+                  title="Compare your top 3 matches side-by-side with Premium"
+                  className="flex items-center gap-1.5 text-xs uppercase tracking-widest font-bold px-3 py-1.5 rounded-lg border border-white/20 text-white/50 hover:border-white/50 hover:text-white transition-colors"
+                >
+                  <Lock size={12} /> Compare mode
+                </button>
+              )}
+            </div>
+
+            {compareMode && isPremium ? (
+              <div className="flex flex-col gap-6 mb-10">
+                {Object.entries(rankings).map(([category, list]) => {
+                  if (!list?.length) return null;
+                  const top3 = list.slice(0, 3);
+                  const chosen = answers.colors || [];
+                  return (
+                    <div key={category}>
+                      <p className="text-xs uppercase tracking-widest text-white/45 font-semibold mb-2">
+                        {categoryLabel(category, sport)}
+                      </p>
+                      <div className="grid sm:grid-cols-3 gap-3">
+                        {top3.map((opt, i) => {
+                          const isCurrent = setup[category]?.id === opt.id;
+                          const isExact = chosen.length > 0 && opt.colors.length > 0 && opt.colors.every((c) => chosen.includes(c));
+                          const overlap = opt.colors.filter((c) => chosen.includes(c));
+                          const swatches = isExact ? opt.colors : overlap;
+                          const pct = matchPercent(opt, category, answers, fit, pantFit);
+                          return (
+                            <div
+                              key={opt.id}
+                              className={`rounded-xl border p-4 flex flex-col gap-2 transition-colors ${
+                                isCurrent ? "border-white bg-white/[0.09]" : "border-white/16 bg-white/[0.04] hover:border-white/35"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                                  {isCurrent ? "Current pick" : `Option ${i + 1}`}
+                                </span>
+                                <span className="text-[10px] uppercase tracking-widest text-white/50 font-bold">{pct}% match</span>
+                              </div>
+                              <p className="text-xs uppercase tracking-wide text-white/45 font-semibold">{opt.brand}</p>
+                              <p className="font-['Barlow_Condensed'] font-bold text-base leading-tight">{opt.name}</p>
+                              <div className="flex items-center gap-1.5">
+                                {swatches.map((cid) => {
+                                  const c = colorById[cid];
+                                  return c ? <span key={cid} title={c.label} className="w-4 h-4 rounded-full border border-white/30" style={{ backgroundColor: c.hex }} /> : null;
+                                })}
+                              </div>
+                              <p className="font-['Barlow_Condensed'] font-bold text-lg mt-auto">{formatPrice(opt.price, currency)}</p>
+                              {!isCurrent && (
+                                <button
+                                  onClick={() => setPicks((p) => ({ ...p, [category]: list.indexOf(opt) }))}
+                                  className="text-[10px] uppercase tracking-widest font-bold text-white/60 border border-white/25 rounded-lg py-1.5 hover:border-white hover:text-white transition-colors"
+                                >
+                                  Use this one
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
             <div className="grid sm:grid-cols-2 gap-4 mb-10">
               {Object.entries(setup).map(([category, item]) => {
                 if (!item) return null;
@@ -1918,6 +2006,7 @@ export default function SlopeFit() {
                 );
               })}
             </div>
+            )}
 
             <div className="mb-8">
               <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-3">Your look, at a glance</p>
