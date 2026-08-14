@@ -8,7 +8,7 @@ import {
 import { supabase } from "./supabaseClient";
 
 const FONT_IMPORT = `
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 `;
 
 /* ---------------------------------------------------------
@@ -1370,7 +1370,7 @@ export default function SlopeFit() {
 
   if (phase === "sport-select") {
     return (
-      <div className="relative min-h-screen w-full text-white flex flex-col items-center justify-center px-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="relative min-h-screen w-full text-white flex flex-col items-center justify-center px-6" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
         <style>{FONT_IMPORT}</style>
         <MountainField />
         <SnowFall />
@@ -1412,7 +1412,7 @@ export default function SlopeFit() {
   }
 
   return (
-    <div className="relative min-h-screen w-full text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="relative min-h-screen w-full text-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
       <style>{FONT_IMPORT}</style>
       <style>{`
         @keyframes slopefitIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -1511,18 +1511,11 @@ export default function SlopeFit() {
                 Start the fit check <ChevronRight size={20} />
               </button>
 
-              <div className="flex flex-wrap gap-x-8 gap-y-2 mt-8 pt-6 border-t border-white/10">
-                {[
-                  ["38", "Real brands"],
-                  ["237", "Products matched against"],
-                  ["6", "Gear categories"],
-                ].map(([n, label]) => (
-                  <div key={label}>
-                    <span className="font-['Barlow_Condensed'] font-black text-2xl text-white">{n}</span>
-                    <span className="block text-[11px] uppercase tracking-wide text-white/40 font-semibold">{label}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-white/45 mt-8 pt-6 border-t border-white/10 max-w-md leading-relaxed">
+                Matched against <span className="text-white font-semibold">38 real brands</span> across{" "}
+                <span className="text-white font-semibold">237 products</span> and{" "}
+                <span className="text-white font-semibold">6 gear categories</span> — not a generic catalog.
+              </p>
             </div>
 
             <div id="how-it-works" className="py-10 border-t border-white/10 scroll-mt-28">
