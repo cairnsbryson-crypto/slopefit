@@ -12,6 +12,42 @@ const FONT_IMPORT = `
 `;
 
 /* ---------------------------------------------------------
+   SIGN-IN COOLDOWN — a client-side UX throttle only. This does
+   NOT stop abuse on its own: it's plain localStorage, so clearing
+   storage, using a private window, or calling Supabase directly
+   bypasses it entirely. The actual enforced protection against
+   OTP abuse lives server-side in Supabase (Dashboard → Authentication
+   → Rate Limits) - that's what to configure for real security.
+   This just keeps the UI from hammering signInWithOtp with repeat
+   clicks and gives the user a clear "try again in N minutes" cue.
+--------------------------------------------------------- */
+const AUTH_ATTEMPT_LIMIT = 5;
+const AUTH_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_ATTEMPTS_KEY = "slopefit_auth_attempts";
+
+function getRecentAuthAttempts() {
+  let stored = [];
+  try {
+    stored = JSON.parse(localStorage.getItem(AUTH_ATTEMPTS_KEY) || "[]");
+  } catch {
+    stored = [];
+  }
+  const cutoff = Date.now() - AUTH_ATTEMPT_WINDOW_MS;
+  const recent = stored.filter((t) => typeof t === "number" && t > cutoff);
+  if (recent.length !== stored.length) {
+    localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  }
+  return recent;
+}
+
+function recordAuthAttempt() {
+  const recent = getRecentAuthAttempts();
+  recent.push(Date.now());
+  localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  return recent;
+}
+
+/* ---------------------------------------------------------
    20-COLOR PALETTE — light + dark. Users pick up to 3.
 --------------------------------------------------------- */
 const PALETTE = [
@@ -1207,7 +1243,8 @@ export default function SlopeFit() {
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
-  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error"
+  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error" | "rate_limited"
+  const [authRetryAt, setAuthRetryAt] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({ terrain: [], style: [], colors: [] });
   const [picks, setPicks] = useState({});
@@ -1267,6 +1304,13 @@ export default function SlopeFit() {
   async function sendMagicLink(e) {
     e.preventDefault();
     if (!authEmail) return;
+    const recentAttempts = getRecentAuthAttempts();
+    if (recentAttempts.length >= AUTH_ATTEMPT_LIMIT) {
+      setAuthRetryAt(Math.min(...recentAttempts) + AUTH_ATTEMPT_WINDOW_MS);
+      setAuthStatus("rate_limited");
+      return;
+    }
+    recordAuthAttempt();
     setAuthStatus("sending");
     localStorage.setItem("slopefit_return_to_premium", "true");
     if (sport) localStorage.setItem("slopefit_sport", sport);
@@ -2103,6 +2147,15 @@ export default function SlopeFit() {
               ) : authStatus === "sent" ? (
                 <p className="text-sm text-white/70">
                   Check <span className="text-white font-semibold">{authEmail}</span> for a sign-in link.
+                </p>
+              ) : authStatus === "rate_limited" ? (
+                <p className="text-sm text-white/70">
+                  Too many sign-in attempts. Try again in{" "}
+                  <span className="text-white font-semibold">
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000))} minute
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000)) === 1 ? "" : "s"}
+                  </span>
+                  .
                 </p>
               ) : (
                 <form onSubmit={sendMagicLink} className="flex flex-col sm:flex-row gap-3">
