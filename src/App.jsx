@@ -896,7 +896,7 @@ const STANCE = [
 function SnowFall() {
   const flakes = Array.from({ length: 34 });
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       <style>{`
         @keyframes snowDrift { from { transform: translateY(-6vh) translateX(0); } to { transform: translateY(106vh) translateX(var(--drift)); } }
       `}</style>
@@ -1154,7 +1154,7 @@ function ElevationProgress({ step, total, sport }) {
 function MountainField() {
   const dots = Array.from({ length: 90 });
   return (
-    <div className="fixed inset-0 -z-10 bg-black overflow-hidden">
+    <div className="absolute inset-0 -z-10 bg-black overflow-hidden">
       <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice" className="w-full h-full">
         <defs>
           <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="white" strokeWidth="0.6" /></pattern>
