@@ -681,6 +681,22 @@ function buildRankings(answers, sport) {
     const eligible = items.filter((i) => genderMatches(i, answers.gender));
     let pool = eligible.length ? eligible : items;
 
+    // For skis specifically, the TYPE of ski matters more than color or
+    // budget — a black Völkl race ski or K2 all-mountain ski isn't a good
+    // answer to "I ride park," even if the color happens to line up
+    // perfectly. Narrow to the right ski type FIRST, before the budget
+    // filter below, so a lower budget tier can't wipe out every race/park
+    // option before the type filter ever runs (every race-tagged ski in
+    // the catalog happens to be "premium" tier, so filtering budget first
+    // silently emptied the race pool and fell back to the wrong ski type).
+    if (category === "skis" && wantsParkSkis) {
+      const parkSkis = pool.filter((i) => i.terrain.includes("park"));
+      if (parkSkis.length) pool = parkSkis;
+    } else if (category === "skis" && wantsRaceSkis) {
+      const raceSkis = pool.filter((i) => i.style.includes("race"));
+      if (raceSkis.length) pool = raceSkis;
+    }
+
     // Hard budget ceiling. Tier match used to be only a scoring bonus,
     // which meant a "Budget-Friendly" pick could still land on a premium
     // item if it scored well on ability/terrain/style - and testing showed
@@ -688,25 +704,16 @@ function buildRankings(answers, sport) {
     // past the promised total by up to 3x. Budget is now a real filter:
     // never show anything above the selected tier, with a fallback to the
     // unrestricted pool only if a category has nothing at or under it.
+    // For skis this fallback also protects the type narrowing above — if
+    // every race/park ski happens to sit above budget, keep the correct
+    // ski type rather than dropping to an in-budget ski of the wrong type.
     if (answers.budget) {
       const budgetRank = TIER_ORDER.indexOf(answers.budget);
       const withinBudget = pool.filter((i) => TIER_ORDER.indexOf(i.tier) <= budgetRank);
       if (withinBudget.length) pool = withinBudget;
     }
 
-    // For skis specifically, the TYPE of ski matters more than color —
-    // a black Völkl race ski or K2 all-mountain ski isn't a good answer
-    // to "I ride park," even if the color happens to line up perfectly.
-    // Narrow to the right ski type FIRST, so color can only refine
-    // within that pool afterward — never override it.
     let workingPool = pool;
-    if (category === "skis" && wantsParkSkis) {
-      const parkSkis = workingPool.filter((i) => i.terrain.includes("park"));
-      if (parkSkis.length) workingPool = parkSkis;
-    } else if (category === "skis" && wantsRaceSkis) {
-      const raceSkis = workingPool.filter((i) => i.style.includes("race"));
-      if (raceSkis.length) workingPool = raceSkis;
-    }
 
     // Hard guarantee: if any item in the (possibly already ski-type-
     // narrowed) pool comes ENTIRELY in colors the user picked (no stray
