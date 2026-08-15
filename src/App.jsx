@@ -12,6 +12,42 @@ const FONT_IMPORT = `
 `;
 
 /* ---------------------------------------------------------
+   SIGN-IN COOLDOWN — a client-side UX throttle only. This does
+   NOT stop abuse on its own: it's plain localStorage, so clearing
+   storage, using a private window, or calling Supabase directly
+   bypasses it entirely. The actual enforced protection against
+   OTP abuse lives server-side in Supabase (Dashboard → Authentication
+   → Rate Limits) - that's what to configure for real security.
+   This just keeps the UI from hammering signInWithOtp with repeat
+   clicks and gives the user a clear "try again in N minutes" cue.
+--------------------------------------------------------- */
+const AUTH_ATTEMPT_LIMIT = 5;
+const AUTH_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_ATTEMPTS_KEY = "slopefit_auth_attempts";
+
+function getRecentAuthAttempts() {
+  let stored = [];
+  try {
+    stored = JSON.parse(localStorage.getItem(AUTH_ATTEMPTS_KEY) || "[]");
+  } catch {
+    stored = [];
+  }
+  const cutoff = Date.now() - AUTH_ATTEMPT_WINDOW_MS;
+  const recent = stored.filter((t) => typeof t === "number" && t > cutoff);
+  if (recent.length !== stored.length) {
+    localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  }
+  return recent;
+}
+
+function recordAuthAttempt() {
+  const recent = getRecentAuthAttempts();
+  recent.push(Date.now());
+  localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  return recent;
+}
+
+/* ---------------------------------------------------------
    20-COLOR PALETTE — light + dark. Users pick up to 3.
 --------------------------------------------------------- */
 const PALETTE = [
@@ -224,7 +260,7 @@ const SNOWBOARD_BOARDS = {
     { id: "bd10", name: "Agent", brand: "Rome", price: 550, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "moguls"], style: ["classic", "freeride"], colors: ["black"], tier: "mid" },
     { id: "bd11", name: "Banked Country", brand: "GNU", price: 600, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
     // men's
-    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black"], tier: "premium", image: "https://www.burton.com/static/product/W26/106881A97DRG154_1.png?impolicy=bgwhite&imwidth=800" },
+    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black"], tier: "premium" },
     { id: "bdm2", name: "Custom Flying V", brand: "Burton", price: 550, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["white"], tier: "mid" },
     { id: "bdm3", name: "Mercury", brand: "Capita", price: 680, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["black"], tier: "premium" },
     { id: "bdm4", name: "DOA", brand: "Capita", price: 550, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white"], tier: "mid" },
@@ -241,46 +277,52 @@ const SNOWBOARD_BOARDS = {
 const CATALOG = {
   skis: [
     { id: "sm1", name: "Experience 86 Basalt (26/27)", brand: "Rossignol", price: 650, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black", "forest"], tier: "value", image: "https://www.rossignol.com/dw/image/v2/BJJZ_PRD/on/demandware.static/-/Sites-rossignol-catalog/default/dwde0c9732/images/large/RAMFQ04_EXPERIENCE_86_BASALT_OPEN_72DPI_01.jpg?sw=800" },
-    { id: "sm2", name: "QST 98 (26/27)", brand: "Salomon", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["olive", "sand"], tier: "mid" },
-    { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["black"], tier: "premium" },
-    { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["olive", "black"], tier: "value" },
+    { id: "sm2", name: "QST 100 (26/27)", brand: "Salomon", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["sky", "black"], tier: "mid", image: "https://cdn.dam.salomon.com/e44113dc-9301-4bf9-af74-b2f301454ca1/L47421000+/PNG-2000px-max-72dpi.png" },
+    { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white", "red"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_tom-wallisch-pro_LN261776?w=1200&qlt=90&fmt=auto" },
+    { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["white", "orange"], tier: "value", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_chronic-94_LN261773?w=1200&qlt=90&fmt=auto" },
     { id: "sm3", name: "ARV 94 (26/27)", brand: "Armada", price: 600, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black", "white"], tier: "value" },
     { id: "sm4", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
-    { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "value" },
+    { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black", "orange"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Topsheet-1x1.jpg?v=1750405561" },
     { id: "sm5", name: "Bent 100 (26/27)", brand: "Atomic", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["olive", "sand"], tier: "mid" },
-    { id: "sm6", name: "Blade Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["red", "charcoal"], tier: "premium" },
-    { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
+    { id: "sm6", name: "Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["forest"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_optic-96_LN261759?w=1200&qlt=90&fmt=auto" },
+    { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["burgundy"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2skis/volkl_2627_m7-mantra_V2610112?w=1200&qlt=90&fmt=auto" },
     { id: "sm8", name: "Mindbender 99Ti (26/27)", brand: "K2", price: 800, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "orange"], tier: "premium" },
     { id: "sm10", name: "Antimatter 100 (26/27)", brand: "Armada", price: 820, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
     { id: "sm11", name: "Bent Decode (26/27)", brand: "Atomic", price: 650, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm14", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value" },
     { id: "sm17", name: "ARV 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm18", name: "ARV 106 Ti (26/27)", brand: "Armada", price: 560, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
-    { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange", "purple"], tier: "value" },
+    { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "magenta"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Topsheet-1x1.jpg?v=1750405167" },
     { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["teal", "lime"], tier: "mid" },
-    { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black", "white"], tier: "premium" },
-    { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["black", "forest"], tier: "mid" },
+    { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["black", "purple"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-3-Topsheet-1x1.jpg?v=1750405805" },
+    { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
+    { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["olive", "navy"], tier: "mid", image: "https://cdn.media.amplience.net/s/k2/k2_2627_mindbender-90_KS261793-KS261794?w=1200&qlt=90&fmt=auto" },
     { id: "sm15", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["black"], tier: "premium" },
     { id: "sm16", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
-    { id: "sw1", name: "Experience W 82 (26/27)", brand: "Rossignol", price: 600, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value" },
-    { id: "sw2", name: "Santa Ana 98 (26/27)", brand: "Nordica", price: 780, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "forest"], tier: "premium" },
+    { id: "sm25", name: "RC4 Worldcup SL (26/27)", brand: "Fischer", price: 1150, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime", "black"], tier: "premium", image: "https://www.fischersports.com/media/1280x1706/ff/ae/a9/1783392732/a04026_rc4_noize_sl_01.png" },
+    { id: "sm26", name: "RC4 Worldcup GS (26/27)", brand: "Fischer", price: 1200, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime"], tier: "premium", image: "https://www.fischersports.com/media/1620x2160/79/46/db/1726236335/a02023_rc4_wc_gs_men_01.png" },
+    { id: "sm27", name: "The Curv GT (26/27)", brand: "Fischer", price: 780, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["navy"], tier: "mid", image: "https://www.fischersports.com/media/1620x2160/90/68/be/1776869205/p09326_the_curv_gt_80_01.png" },
+    { id: "sw1", name: "Experience W 82 (26/27)", brand: "Rossignol", price: 600, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["cream", "blush"], tier: "value", image: "https://www.rossignol.com/dw/image/v2/BJJZ_PRD/on/demandware.static/-/Sites-rossignol-catalog/default/dwca042f63/images/large/RAKFS01_EXPERIENCE_W_82_BASALT_XPRESS_rgb72dpi_00.jpg?sw=800" },
+    { id: "sw2", name: "Santa Ana 97 (26/27)", brand: "Nordica", price: 780, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["coral", "navy"], tier: "premium", image: "https://www.nordica.com/storage/Product/0A548600001_SANTA_ANA_97_FLAT.png" },
     { id: "sw3", name: "ARW 94 (26/27)", brand: "Armada", price: 600, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["purple", "lime"], tier: "value" },
-    { id: "sw4", name: "Dancer 2X (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["blush", "purple"], tier: "value" },
+    { id: "sw4", name: "Dancer 2X (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["lavender", "purple"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-2-Purple-Topsheet-1x1.jpg?v=1756474724" },
     { id: "sw5", name: "Maven 93 C (26/27)", brand: "Atomic", price: 700, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["sky", "white"], tier: "mid" },
-    { id: "sw6", name: "Pandora 94 (26/27)", brand: "Line", price: 720, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["mint", "lime"], tier: "mid" },
-    { id: "sw7", name: "Sheeva 10 (26/27)", brand: "Blizzard", price: 800, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "moguls"], style: ["freeride"], colors: ["black", "forest"], tier: "premium" },
+    { id: "sw6", name: "Pandora 92 (26/27)", brand: "Line", price: 720, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["black"], tier: "mid", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_pandora-92_LN261765?w=1200&qlt=90&fmt=auto" },
+    { id: "sw7", name: "Sheeva 10 (26/27)", brand: "Blizzard", price: 800, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "moguls"], style: ["freeride"], colors: ["magenta", "purple"], tier: "premium", image: "https://www.blizzard-tecnica.com/storage/Product/8A536600-001_SHEEVA_10_flat_01.png" },
     { id: "sw8", name: "Secret 96 (26/27)", brand: "Völkl", price: 875, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
     { id: "sw10", name: "Antimatter 88 (26/27)", brand: "Armada", price: 780, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "sw11", name: "Dancer 79 (26/27)", brand: "Faction", price: 720, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
+    { id: "sw11", name: "Dancer 79 (26/27)", brand: "Faction", price: 720, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
     { id: "sw12", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sw13", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
     { id: "sw14", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["black"], tier: "premium" },
     { id: "sw15", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
     { id: "sw16", name: "ARW 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sw17", name: "ARW 100 (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
-    { id: "sw18", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange", "purple"], tier: "value" },
-    { id: "sw19", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["teal", "lime"], tier: "mid" },
+    { id: "sw18", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "magenta"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Topsheet-1x1.jpg?v=1750405167" },
+    { id: "sw19", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["black", "purple"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-3-Topsheet-1x1.jpg?v=1750405805" },
+    { id: "sw20", name: "RC4 Worldcup SL Women (26/27)", brand: "Fischer", price: 1100, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime", "black"], tier: "premium", image: "https://www.fischersports.com/media/1280x1706/7a/ce/d4/1783392734/a04626_rc4_noize_sl_01.png" },
+    { id: "sw21", name: "RC4 Worldcup GS Women (26/27)", brand: "Fischer", price: 1150, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime"], tier: "premium", image: "https://www.fischersports.com/media/1620x2160/1d/e9/30/1726236336/a03023_rc4_wc_gs_women_01.png" },
+    { id: "sw22", name: "The Curv GT (26/27)", brand: "Fischer", price: 750, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["navy"], tier: "mid", image: "https://www.fischersports.com/media/1620x2160/90/68/be/1776869205/p09326_the_curv_gt_80_01.png" },
   ],
   jacket: [
     { id: "jm3", name: "Rider Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand", "olive"], tier: "value", fit: "baggy", shell: true },
@@ -681,6 +723,22 @@ function buildRankings(answers, sport) {
     const eligible = items.filter((i) => genderMatches(i, answers.gender));
     let pool = eligible.length ? eligible : items;
 
+    // For skis specifically, the TYPE of ski matters more than color or
+    // budget — a black Völkl race ski or K2 all-mountain ski isn't a good
+    // answer to "I ride park," even if the color happens to line up
+    // perfectly. Narrow to the right ski type FIRST, before the budget
+    // filter below, so a lower budget tier can't wipe out every race/park
+    // option before the type filter ever runs (every race-tagged ski in
+    // the catalog happens to be "premium" tier, so filtering budget first
+    // silently emptied the race pool and fell back to the wrong ski type).
+    if (category === "skis" && wantsParkSkis) {
+      const parkSkis = pool.filter((i) => i.terrain.includes("park"));
+      if (parkSkis.length) pool = parkSkis;
+    } else if (category === "skis" && wantsRaceSkis) {
+      const raceSkis = pool.filter((i) => i.style.includes("race"));
+      if (raceSkis.length) pool = raceSkis;
+    }
+
     // Hard budget ceiling. Tier match used to be only a scoring bonus,
     // which meant a "Budget-Friendly" pick could still land on a premium
     // item if it scored well on ability/terrain/style - and testing showed
@@ -688,25 +746,16 @@ function buildRankings(answers, sport) {
     // past the promised total by up to 3x. Budget is now a real filter:
     // never show anything above the selected tier, with a fallback to the
     // unrestricted pool only if a category has nothing at or under it.
+    // For skis this fallback also protects the type narrowing above — if
+    // every race/park ski happens to sit above budget, keep the correct
+    // ski type rather than dropping to an in-budget ski of the wrong type.
     if (answers.budget) {
       const budgetRank = TIER_ORDER.indexOf(answers.budget);
       const withinBudget = pool.filter((i) => TIER_ORDER.indexOf(i.tier) <= budgetRank);
       if (withinBudget.length) pool = withinBudget;
     }
 
-    // For skis specifically, the TYPE of ski matters more than color —
-    // a black Völkl race ski or K2 all-mountain ski isn't a good answer
-    // to "I ride park," even if the color happens to line up perfectly.
-    // Narrow to the right ski type FIRST, so color can only refine
-    // within that pool afterward — never override it.
     let workingPool = pool;
-    if (category === "skis" && wantsParkSkis) {
-      const parkSkis = workingPool.filter((i) => i.terrain.includes("park"));
-      if (parkSkis.length) workingPool = parkSkis;
-    } else if (category === "skis" && wantsRaceSkis) {
-      const raceSkis = workingPool.filter((i) => i.style.includes("race"));
-      if (raceSkis.length) workingPool = raceSkis;
-    }
 
     // Hard guarantee: if any item in the (possibly already ski-type-
     // narrowed) pool comes ENTIRELY in colors the user picked (no stray
@@ -847,7 +896,7 @@ const STANCE = [
 function SnowFall() {
   const flakes = Array.from({ length: 34 });
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       <style>{`
         @keyframes snowDrift { from { transform: translateY(-6vh) translateX(0); } to { transform: translateY(106vh) translateX(var(--drift)); } }
       `}</style>
@@ -1105,7 +1154,7 @@ function ElevationProgress({ step, total, sport }) {
 function MountainField() {
   const dots = Array.from({ length: 90 });
   return (
-    <div className="fixed inset-0 -z-10 bg-black overflow-hidden">
+    <div className="absolute inset-0 -z-10 bg-black overflow-hidden">
       <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice" className="w-full h-full">
         <defs>
           <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="white" strokeWidth="0.6" /></pattern>
@@ -1122,6 +1171,43 @@ function MountainField() {
         <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="url(#hatch2)" opacity="0.5" />
         <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="none" stroke="white" strokeWidth="1.4" opacity="0.9" />
       </svg>
+    </div>
+  );
+}
+
+/* Product shots are hotlinked from brand CDNs, which rotate and retire URLs
+   between seasons, so a dead image is a matter of when rather than if. The
+   previous inline onError tried to reveal a sibling placeholder that React
+   only rendered when `image` was absent entirely - so when a URL DID break,
+   it hid the <img> and revealed nothing, leaving a blank gap in the card.
+   Owning the failure in local state means a broken URL degrades to exactly
+   the same colored icon panel that image-less items already use. */
+function ProductImage({ item, category, sport, chosenColors }) {
+  const [failed, setFailed] = useState(false);
+
+  if (item.image && !failed) {
+    return (
+      <img
+        src={item.image}
+        alt={`${item.brand} ${item.name}`}
+        className="w-full aspect-square object-contain rounded-lg border border-white/15 bg-white p-1"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  const overlap = item.colors.filter((c) => (chosenColors || []).includes(c));
+  const primary = colorById[overlap[0] || item.colors[0]];
+  const Icon =
+    CATEGORY_ICON_FALLBACK[category] ||
+    (category === "skis" ? (sport === "snowboard" ? SnowboardIcon : SkiIcon) : Shirt);
+  return (
+    <div
+      className="w-full aspect-square rounded-lg border border-white/15 flex items-center justify-center"
+      style={{ backgroundColor: primary?.hex || "#2A2A2E" }}
+    >
+      <Icon size={32} color={primary?.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={1.8} />
     </div>
   );
 }
@@ -1194,7 +1280,8 @@ export default function SlopeFit() {
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
-  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error"
+  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error" | "rate_limited"
+  const [authRetryAt, setAuthRetryAt] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({ terrain: [], style: [], colors: [] });
   const [picks, setPicks] = useState({});
@@ -1254,6 +1341,13 @@ export default function SlopeFit() {
   async function sendMagicLink(e) {
     e.preventDefault();
     if (!authEmail) return;
+    const recentAttempts = getRecentAuthAttempts();
+    if (recentAttempts.length >= AUTH_ATTEMPT_LIMIT) {
+      setAuthRetryAt(Math.min(...recentAttempts) + AUTH_ATTEMPT_WINDOW_MS);
+      setAuthStatus("rate_limited");
+      return;
+    }
+    recordAuthAttempt();
     setAuthStatus("sending");
     localStorage.setItem("slopefit_return_to_premium", "true");
     if (sport) localStorage.setItem("slopefit_sport", sport);
@@ -1914,27 +2008,7 @@ export default function SlopeFit() {
                 const pct = matchPercent(item, category, answers, fit, pantFit);
                 return (
                   <div key={category} className="rounded-xl border border-white/16 bg-white/[0.04] backdrop-blur-sm p-5 flex flex-col gap-3 hover:border-white/35 hover:bg-white/[0.07] transition-colors">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={`${item.brand} ${item.name}`}
-                        className="w-full aspect-[4/3] object-cover rounded-lg border border-white/15 bg-black/20"
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling.style.display = "flex"; }}
-                      />
-                    ) : null}
-                    {!item.image && (() => {
-                      const chosen = answers.colors || [];
-                      const overlap = item.colors.filter((c) => chosen.includes(c));
-                      const primaryId = overlap[0] || item.colors[0];
-                      const primary = colorById[primaryId];
-                      const Icon = CATEGORY_ICON_FALLBACK[category] || (category === "skis" ? (sport === "snowboard" ? SnowboardIcon : SkiIcon) : Shirt);
-                      return (
-                        <div className="w-full aspect-[4/3] rounded-lg border border-white/15 flex items-center justify-center" style={{ backgroundColor: primary?.hex || "#2A2A2E" }}>
-                          <Icon size={32} color={primary?.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={1.8} />
-                        </div>
-                      );
-                    })()}
+                    <ProductImage item={item} category={category} sport={sport} chosenColors={answers.colors} />
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <span className="text-xs uppercase tracking-widest text-white/45 font-semibold block">
@@ -2090,6 +2164,15 @@ export default function SlopeFit() {
               ) : authStatus === "sent" ? (
                 <p className="text-sm text-white/70">
                   Check <span className="text-white font-semibold">{authEmail}</span> for a sign-in link.
+                </p>
+              ) : authStatus === "rate_limited" ? (
+                <p className="text-sm text-white/70">
+                  Too many sign-in attempts. Try again in{" "}
+                  <span className="text-white font-semibold">
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000))} minute
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000)) === 1 ? "" : "s"}
+                  </span>
+                  .
                 </p>
               ) : (
                 <form onSubmit={sendMagicLink} className="flex flex-col sm:flex-row gap-3">
