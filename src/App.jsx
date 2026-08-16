@@ -217,7 +217,7 @@ const GEAR_PREVIEW = [
 ];
 
 const WHY_ITEMS = [
-  { title: "Brands people actually ride", desc: "Faction, Armada, Salomon, Völkl, Arc'teryx, The North Face, Ninety Roll, Beyond Medals.", icon: Sparkles },
+  { title: "Brands people actually ride", desc: "Faction, Armada, Salomon, Völkl, Arc'teryx, Yuki Threads, Ninety Roll, Beyond Medals.", icon: Sparkles },
   { title: "Your colors, your call", desc: "Pick up to three from twenty-five shades and every piece gets matched to them.", icon: Palette },
   { title: "Sized to you", desc: "Ski or board length and cut tuned to your gender, height, weight, and ability.", icon: Ruler },
 ];
@@ -229,7 +229,7 @@ function scrollToSection(id) {
 
 /* ---------------------------------------------------------
    CATALOG — established ski brands for hardgoods; outerwear
-   spans The North Face, Beyond Medals, Ninety Roll, Polar
+   spans Yuki Threads, Beyond Medals, Ninety Roll, Polar
    Pursuit, and GSOU SNOW. Goggles: Oakley,
    Salomon, Giro, Smith, Anon. Helmets: Giro, Smith, Scott.
 
@@ -271,6 +271,20 @@ const SNOWBOARD_BOARDS = {
     { id: "bdw2", name: "Blossom", brand: "Burton", price: 450, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["black", "white"], tier: "value" },
   ],
 };
+
+/* Landing-page stats. These were hardcoded and had already drifted from
+   the catalog they describe, so they are derived instead - the numbers on
+   the page cannot disagree with what the quiz actually matches against. */
+function catalogStats() {
+  const groups = [...Object.values(CATALOG), ...Object.values(SNOWBOARD_BOARDS)];
+  const items = groups.flat();
+  return {
+    products: items.length,
+    brands: new Set(items.map((i) => i.brand)).size,
+    categories: Object.keys(CATALOG).length,
+  };
+}
+
 
 
 
@@ -331,12 +345,6 @@ const CATALOG = {
     { id: "jm24", name: "Twin Line 30K Snow Jacket — Frost Purple", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/12/B05A0130-819x1024.jpg" },
     { id: "jm21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_M_01.jpg?width=800" },
     { id: "jm22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2689-ARG_M_01.jpg?width=800" },
-    { id: "jm7", name: "Ceptor Jacket", brand: "The North Face", price: 475, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["white"], tier: "mid", fit: "regular", shell: true },
-    { id: "jm8", name: "Hex GORE-TEX Jacket", brand: "The North Face", price: 500, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm9", name: "Summit Verbier GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "freeride"], colors: ["white"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm12", name: "Summit Eastwall GORE-TEX Jacket", brand: "The North Face", price: 600, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "ice"], style: ["freeride", "race"], colors: ["forest", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm13", name: "Summit Tsirku GORE-TEX Pro Jacket", brand: "The North Face", price: 850, gender: ["m"], ability: ["expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["red", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm14", name: "Jazzi 3L GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black", "forest"], tier: "premium", fit: "regular", shell: true },
     { id: "jm11", name: "Sabre Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true, image: "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000009913-Sabre-Insulated-Jacket-Black-Front-View.jpg" },
     { id: "jw3", name: "Twin Line 30K Snow Jacket — Stone White", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/07/B05A0088-819x1024.jpg" },
     { id: "jw4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 290, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, image: "https://beyondmedals.centracdn.net/client/dynamic/images/593_bd93c29c21-bmaw25-flat-fullzip-jacket-black-web.jpg" },
@@ -346,11 +354,6 @@ const CATALOG = {
     { id: "jw21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_F_01.jpg?width=800" },
     { id: "jw22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2608-ARG_F_01.jpg?width=800" },
     { id: "jw11", name: "Luminal 3L Jacket (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw7", name: "Superlu Jacket", brand: "The North Face", price: 480, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["white"], tier: "premium", fit: "baggy", shell: false },
-    { id: "jw12", name: "Ceptor Jacket", brand: "The North Face", price: 475, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "mid", fit: "regular", shell: true },
-    { id: "jw13", name: "Hex GORE-TEX Jacket", brand: "The North Face", price: 500, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw9", name: "Summit Eastwall GORE-TEX Jacket", brand: "The North Face", price: 600, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "ice"], style: ["freeride", "race"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw14", name: "Summit Verbier GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "freeride"], colors: ["white"], tier: "premium", fit: "regular", shell: true },
     { id: "jw10", name: "Sentinel Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true, image: "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000010538-Sentinel-Insulated-Jacket-Black-Women-s-Front-View.jpg" },
     { id: "jtb1", name: "Mach 2 Shell", brand: "Trashbags", price: 205, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3400.png?v=1743442493" },
     { id: "jbr1", name: "Briqed Jacket", brand: "Briqed", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/1brqied_-_Edited.png?width=800" },
@@ -1262,6 +1265,7 @@ function Chip({ children }) {
 
 export default function SlopeFit() {
   const [phase, setPhase] = useState("sport-select");
+  const stats = useMemo(() => catalogStats(), []);
   const [sport, setSport] = useState(null); // "ski" | "snowboard"
   const [previousPhase, setPreviousPhase] = useState("intro");
   const [currency, setCurrency] = useState("CAD");
@@ -1601,9 +1605,9 @@ export default function SlopeFit() {
               </button>
 
               <p className="text-sm text-white/45 mt-8 pt-6 border-t border-white/10 max-w-md leading-relaxed">
-                Matched against <span className="text-white font-semibold">38 real brands</span> across{" "}
-                <span className="text-white font-semibold">237 products</span> and{" "}
-                <span className="text-white font-semibold">6 gear categories</span> — not a generic catalog.
+                Matched against <span className="text-white font-semibold">{stats.brands} real brands</span> across{" "}
+                <span className="text-white font-semibold">{stats.products} products</span> and{" "}
+                <span className="text-white font-semibold">{stats.categories} gear categories</span> — not a generic catalog.
               </p>
             </div>
 
