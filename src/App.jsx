@@ -995,106 +995,181 @@ function SnowboardIcon({ size = 34, color = "currentColor" }) {
   );
 }
 
-/* A stick figure wearing the full matched setup — each region filled
-   with that category's actual matched colour, so the whole look reads
-   at a glance without needing seven separate swatch tiles. Built from
-   plain rects/circles rather than freehand curves, since a figure
-   made of simple geometric primitives is far less likely to render
-   oddly than hand-tuned bezier paths. */
-function GearFigure({ colors, sport }) {
+/* The rider wearing the full matched setup, drawn as flat line art:
+   every shape is a solid fill with a dark outline, no gradients or
+   shading. That style holds up at small sizes and, more importantly,
+   stays legible whatever colours the match throws at it - a photoreal
+   render would fight the palette rather than show it.
+
+   Each region is filled with that category's actual matched colour, and
+   the trouser silhouette follows the recommended FIT, so a baggy park
+   pant and a slim race pant read as different garments rather than the
+   same shape in a different colour. */
+const INK = "#15171B";
+
+/* Trouser silhouettes by fit. Each entry gives the half-width of the leg
+   at the hip and at the ankle; baggy stays wide all the way down and
+   breaks over the boot, slim tapers hard. */
+const PANT_SHAPE = {
+  slim:    { hip: 10, ankle: 6.5, folds: 0 },
+  regular: { hip: 12, ankle: 9,   folds: 1 },
+  baggy:   { hip: 14, ankle: 14,  folds: 2 },
+};
+
+function luminance(hex) {
+  const h = String(hex || "").replace("#", "");
+  if (h.length !== 6) return 0.5;
+  const n = parseInt(h, 16);
+  if (Number.isNaN(n)) return 0.5;
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+}
+
+/* Seam lines - zips, hems, vents, pockets - are drawn in ink at low
+   opacity, which disappears entirely on a black jacket. Flip them to
+   white there, so an all-black kit still shows its construction instead
+   of rendering as one solid blob. The outlines stay ink either way,
+   since those have to read against the pale plate behind the rider. */
+function detailInk(fill) {
+  return luminance(fill) < 0.42 ? "#FFFFFF" : INK;
+}
+
+function legPath(cxTop, cxBot, shape, yTop, yBot) {
+  const { hip, ankle } = shape;
+  // slight outward bow at the knee so the leg reads as a limb, not a plank
+  const kneeY = yTop + (yBot - yTop) * 0.52;
+  const knee = (hip + ankle) / 2 + 1.5;
+  const cxKnee = (cxTop + cxBot) / 2;
+  return [
+    `M ${cxTop - hip} ${yTop}`,
+    `L ${cxTop + hip} ${yTop}`,
+    `Q ${cxKnee + knee} ${kneeY} ${cxBot + ankle} ${yBot}`,
+    `L ${cxBot - ankle} ${yBot}`,
+    `Q ${cxKnee - knee} ${kneeY} ${cxTop - hip} ${yTop}`,
+    "Z",
+  ].join(" ");
+}
+
+function GearFigure({ colors, sport, pantFit = "regular" }) {
   const { helmet, goggles, jacket, gloves, pants, skis } = colors;
-  const skin = "#C4B5A0";
+  const skin = "#C9B49C";
   const neutral = "#6B6B70";
+  const shape = PANT_SHAPE[pantFit] || PANT_SHAPE.regular;
+  const line = { stroke: INK, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" };
+
+  const hardInk = detailInk(skis || neutral);
+  const jacketInk = detailInk(jacket || neutral);
+  const pantsInk = detailInk(pants || neutral);
+  const helmetInk = detailInk(helmet || "#2A2A2E");
+
   return (
-    <svg viewBox="0 0 152 260" width="100%" height="250" style={{ maxWidth: 185 }}>
-      {/* skis / board — vertical beside the body, roughly where the raised
-          hand grips them. Tips sit at eye level (matching the head at
-          cy=37) rather than towering above the head. Both are noticeably
-          thicker now — a real ski/board reads as a solid plank, not a thin
-          line. Skis get curved upturned tips and a boot binding detail;
-          the snowboard gets angled binding straps, so the two sports
-          actually look distinct from each other. */}
+    <svg viewBox="16 10 140 246" width="100%" height="252" style={{ maxWidth: 195 }}>
+      {/* Paper plate. The ink outlines are near-black, so without a light
+          ground an all-black kit renders as a black shape on a black card
+          and the whole drawing disappears. Same white tile the product
+          thumbnails sit on, so it reads as deliberate rather than stray.
+          Bounds track the viewBox, which is cropped to the rider. */}
+      <rect x="16" y="10" width="140" height="246" rx="10" fill="#F5F2EC" />
+
+      {/* ---- hardgoods, behind the rider ---- */}
       {sport === "snowboard" ? (
-        <>
-          <rect x="102" y="36" width="30" height="203" rx="12" fill={neutral} opacity="0.85" />
-          {/* binding straps, angled like a real stance */}
-          <rect x="96" y="94" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 98)" />
-          <rect x="96" y="172" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 176)" />
-        </>
+        <g {...line}>
+          <rect x="104" y="34" width="32" height="208" rx="15" fill={skis || neutral} />
+          <rect x="99" y="96" width="42" height="9" rx="4.5" fill={hardInk} opacity="0.55" transform="rotate(-8 120 100)" />
+          <rect x="99" y="176" width="42" height="9" rx="4.5" fill={hardInk} opacity="0.55" transform="rotate(-8 120 180)" />
+        </g>
       ) : (
-        <>
-          {/* left ski — thicker body, tip at eye level */}
-          <path d="M 96 58 Q 96 40 107 36 Q 118 40 118 58 L 117 233 Q 117 239 107 239 Q 97 239 96 233 Z" fill={neutral} opacity="0.85" />
-          <rect x="94" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
-          {/* right ski */}
-          <path d="M 120 58 Q 120 40 131 36 Q 142 40 142 58 L 141 233 Q 141 239 131 239 Q 121 239 120 233 Z" fill={neutral} opacity="0.85" />
-          <rect x="118" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
-        </>
+        <g {...line}>
+          <path d="M 98 56 Q 98 38 109 34 Q 120 38 120 56 L 119 236 Q 119 242 109 242 Q 99 242 98 236 Z" fill={skis || neutral} />
+          <path d="M 122 56 Q 122 38 133 34 Q 144 38 144 56 L 143 236 Q 143 242 133 242 Q 123 242 122 236 Z" fill={skis || neutral} />
+          <rect x="96" y="128" width="26" height="9" rx="3" fill={hardInk} opacity="0.55" />
+          <rect x="120" y="128" width="26" height="9" rx="3" fill={hardInk} opacity="0.55" />
+        </g>
       )}
 
-      {/* legs — thick rounded-cap strokes function as filled pant legs with
-          real volume, not thin lines. Slightly offset from each other for a
-          natural weight-bearing stance. */}
-      <path d="M 56 138 Q 53 165 54 188 Q 53 212 52 230" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
-      <path d="M 80 138 Q 82 163 83 186 Q 84 210 84 228" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
+      {/* ---- trousers: silhouette varies with the recommended fit ---- */}
+      <g {...line}>
+        <path d={legPath(57, 52, shape, 134, 228)} fill={pants || neutral} />
+        <path d={legPath(81, 85, shape, 134, 228)} fill={pants || neutral} />
+        {/* seat/waist band ties the two legs together */}
+        <path d="M 45 134 Q 69 128 93 134 L 93 142 Q 69 136 45 142 Z" fill={pants || neutral} />
+        {/* cargo pocket - only on the roomier cuts, where they actually live */}
+        {shape.folds > 0 && (
+          <>
+            <rect x="40" y="168" width="13" height="16" rx="3" fill={pantsInk} stroke={pantsInk} opacity="0.3" strokeWidth="1.4" />
+            <rect x="88" y="168" width="13" height="16" rx="3" fill={pantsInk} stroke={pantsInk} opacity="0.3" strokeWidth="1.4" />
+          </>
+        )}
+        {/* boot break - baggy fabric stacks over the cuff */}
+        {shape.folds > 1 && (
+          <>
+            <path d="M 42 214 Q 52 210 64 214" fill="none" stroke={pantsInk} strokeWidth="1.4" opacity="0.55" />
+            <path d="M 74 214 Q 85 210 97 214" fill="none" stroke={pantsInk} strokeWidth="1.4" opacity="0.55" />
+          </>
+        )}
+      </g>
 
-      {/* ski boots — angled, chunky, filled, rounded corners instead of
-          sharp trapezoid points */}
-      <path d="M 45 227 Q 41 227 41 231 L 39 238 Q 39 240 41 240 L 63 240 Q 65 240 65 238 L 63 231 Q 63 227 59 227 Z" fill={neutral} />
-      <path d="M 77 225 Q 73 225 73 229 L 71 236 Q 71 238 73 238 L 95 238 Q 97 238 97 236 L 95 229 Q 95 225 91 225 Z" fill={neutral} />
+      {/* ---- boots ---- */}
+      <g {...line}>
+        <path d="M 43 226 Q 39 226 39 231 L 37 240 Q 37 243 40 243 L 64 243 Q 67 243 67 240 L 65 231 Q 65 226 61 226 Z" fill={neutral} />
+        <path d="M 75 226 Q 71 226 71 231 L 69 240 Q 69 243 72 243 L 96 243 Q 99 243 99 240 L 97 231 Q 97 226 93 226 Z" fill={neutral} />
+        <path d="M 41 234 L 65 234" strokeWidth="1.4" opacity="0.5" />
+        <path d="M 73 234 L 97 234" strokeWidth="1.4" opacity="0.5" />
+      </g>
 
-      {/* torso — filled jacket silhouette: wide shoulders, tapered waist,
-          slight flare at the hem */}
-      <path
-        d="M 44 66 Q 39 71 41 82 Q 44 102 47 118 Q 47.5 130 48 140 L 88 140 Q 88.5 130 89 118 Q 92 102 95 82 Q 97 71 92 66 Q 80 60 68 60 Q 56 60 44 66 Z"
-        fill={jacket || neutral}
-      />
-      {/* center zipper — a single line down the front reads as "jacket"
-          much more than a plain filled shape does */}
-      <line x1="68" y1="64" x2="68" y2="138" stroke="#000000" strokeWidth="1.5" opacity="0.25" />
-      {/* chest pocket detail */}
-      <rect x="73" y="90" width="14" height="10" rx="4" fill="#000000" opacity="0.12" />
+      {/* ---- jacket ---- */}
+      <g {...line}>
+        <path
+          d="M 43 66 Q 37 72 39 84 Q 43 104 46 120 Q 46.5 132 47 142 L 91 142 Q 91.5 132 92 120 Q 95 104 99 84 Q 101 72 95 66 Q 82 59 69 59 Q 56 59 43 66 Z"
+          fill={jacket || neutral}
+        />
+        {/* hem band, cuffs and centre zip - the details that say "shell" */}
+        <path d="M 47 134 L 91 134" stroke={jacketInk} strokeWidth="1.6" opacity="0.55" />
+        <path d="M 69 63 L 69 134" stroke={jacketInk} strokeWidth="1.6" opacity="0.5" />
+        <rect x="74" y="88" width="14" height="11" rx="3" fill={jacketInk} stroke={jacketInk} opacity="0.28" strokeWidth="1.4" />
+      </g>
 
-      {/* left arm — upper arm and forearm as two thick rounded-cap strokes
-          meeting at an elbow angle, reading as a real sleeve with a bend
-          rather than one thin line */}
-      <path d="M 46 72 Q 36 86 36 102" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
-      <path d="M 36 102 Q 36 118 39 130" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
-      <rect x="30" y="126" width="16" height="14" rx="6" fill={gloves || neutral} />
+      {/* ---- arms ---- */}
+      <g {...line}>
+        {/* Sleeves are strokes, not fills, so the outline is faked by laying
+            a wider ink stroke underneath - stroking a stroke would just put
+            a line down the middle of the arm. */}
+        <path d="M 45 71 Q 34 86 34 103 Q 34 119 37 131" fill="none" strokeWidth="21" />
+        <path d="M 45 71 Q 34 86 34 103 Q 34 119 37 131" fill="none" stroke={jacket || neutral} strokeWidth="17" />
+        <path d="M 93 71 Q 103 64 108 56 L 106 40" fill="none" strokeWidth="21" />
+        <path d="M 93 71 Q 103 64 108 56 L 106 40" fill="none" stroke={jacket || neutral} strokeWidth="17" />
+        <rect x="28" y="127" width="18" height="15" rx="6" fill={gloves || neutral} />
+        <rect x="98" y="31" width="18" height="15" rx="6" fill={gloves || neutral} />
+      </g>
 
-      {/* right arm — raised and bent at the elbow to grip the ski/board */}
-      <path d="M 90 72 Q 100 66 105 59" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
-      <path d="M 105 59 L 103 42" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
-      <rect x="96" y="34" width="16" height="14" rx="6" fill={gloves || neutral} />
+      {/* ---- collar, neck, head ---- */}
+      <g {...line}>
+        <path d="M 50 61 Q 69 75 88 61 L 88 69 Q 69 82 50 69 Z" fill={jacket || neutral} />
+        <rect x="63" y="49" width="12" height="14" rx="4" fill={skin} />
+        <circle cx="69" cy="36" r="16" fill={skin} />
+      </g>
 
-      {/* hood, bunched at the collar under the helmet */}
-      <path d="M 50 62 Q 68 76 86 62 L 86 68 Q 68 82 50 68 Z" fill={jacket || neutral} opacity="0.9" />
+      {/* ---- helmet: crown only, stopping above the brow so the goggles
+              have somewhere to sit ---- */}
+      <g {...line}>
+        <path d="M 49 33 A 20 17 0 0 1 89 33 Q 89 38 85 39 L 53 39 Q 49 38 49 33 Z" fill={helmet || "#2A2A2E"} />
+        {/* vents */}
+        <path d="M 60 23 L 60 29" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        <path d="M 69 21 L 69 28" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        <path d="M 78 23 L 78 29" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        {/* ear pad */}
+        <path d="M 50 37 Q 46 43 50 48 Q 54 44 53 39 Z" fill={helmet || "#2A2A2E"} strokeWidth="1.6" />
+      </g>
 
-      {/* neck */}
-      <rect x="62" y="50" width="12" height="14" rx="4" fill={skin} />
-
-      {/* head */}
-      <circle cx="68" cy="37" r="16" fill={skin} />
-
-      {/* helmet — sized to cover only the crown down to just above eye
-          level, not the whole head. The previous version extended down
-          far enough to sit on top of and completely hide the goggles -
-          that was the actual bug, not a colour or detail issue. */}
-      <path
-        d="M 48 34 A 20 17 0 0 1 88 34 L 88 34 Q 88 38 84 39 L 52 39 Q 48 38 48 34 Z"
-        fill={helmet || "#2A2A2E"}
-      />
-      <path d="M 56 23 Q 68 20 80 23" stroke="#000000" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
-      <path d="M 54 28 Q 68 25 82 28" stroke="#000000" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
-
-      {/* goggles — drawn AFTER the helmet so they sit visibly on top of
-          it, right at the helmet's bottom rim. Frame + separate lens
-          inset is what actually reads as goggles rather than a flat band. */}
-      <rect x="49" y="38" width="38" height="14" rx="7" fill="#161616" />
-      <rect x="52.5" y="40.5" width="31" height="9" rx="4.5" fill={goggles || "#3A6EA5"} />
-      <path d="M 57 42 L 70 46 L 65 48 L 55 44.5 Z" fill="#FFFFFF" opacity="0.28" />
-      <path d="M 49 45 Q 45 45 44 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M 87 45 Q 91 45 92 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
+      {/* ---- goggles: drawn last so they sit on top of the helmet rim,
+              with the strap running back over the shell ---- */}
+      <g {...line}>
+        <path d="M 49 41 Q 44 41 43 37" fill="none" strokeWidth="4" stroke={INK} />
+        <path d="M 89 41 Q 94 41 95 37" fill="none" strokeWidth="4" stroke={INK} />
+        <rect x="48" y="37" width="42" height="15" rx="7.5" fill={INK} />
+        <rect x="51.5" y="39.5" width="35" height="10" rx="5" fill={goggles || "#3A6EA5"} strokeWidth="1.4" />
+        {/* lens glint */}
+        <path d="M 57 42 L 71 46 L 66 48.5 L 55 45 Z" fill="#FFFFFF" opacity="0.3" stroke="none" />
+      </g>
     </svg>
   );
 }
@@ -2113,7 +2188,7 @@ export default function SlopeFit() {
                 });
                 return (
                   <div className="rounded-xl border border-white/18 bg-white/[0.03] py-6 flex flex-col items-center">
-                    <GearFigure colors={resolvedColors} sport={sport} />
+                    <GearFigure colors={resolvedColors} sport={sport} pantFit={pantFit} />
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-4 px-4">
                       {Object.entries(setup).map(([category, item]) => {
                         if (!item || !resolvedColors[category]) return null;
