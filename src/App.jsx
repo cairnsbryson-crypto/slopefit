@@ -281,19 +281,18 @@ const CATALOG = {
     { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white", "red"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_tom-wallisch-pro_LN261776?w=1200&qlt=90&fmt=auto" },
     { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["white", "orange"], tier: "value", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_chronic-94_LN261773?w=1200&qlt=90&fmt=auto" },
     { id: "sm3", name: "ARV 94 (26/27)", brand: "Armada", price: 600, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black", "white"], tier: "value" },
-    { id: "sm4", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
+    { id: "sm4", name: "Prodigy 2 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["cream", "red"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Capsule-Topsheet-1x1.jpg?v=1750406708" },
     { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black", "orange"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Topsheet-1x1.jpg?v=1750405561" },
     { id: "sm5", name: "Bent 100 (26/27)", brand: "Atomic", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["olive", "sand"], tier: "mid" },
     { id: "sm6", name: "Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["forest"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_optic-96_LN261759?w=1200&qlt=90&fmt=auto" },
     { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["burgundy"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2skis/volkl_2627_m7-mantra_V2610112?w=1200&qlt=90&fmt=auto" },
-    { id: "sm8", name: "Mindbender 99Ti (26/27)", brand: "K2", price: 800, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "orange"], tier: "premium" },
     { id: "sm10", name: "Antimatter 100 (26/27)", brand: "Armada", price: 820, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
     { id: "sm11", name: "Bent Decode (26/27)", brand: "Atomic", price: 650, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm14", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value" },
     { id: "sm17", name: "ARV 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
     { id: "sm18", name: "ARV 106 Ti (26/27)", brand: "Armada", price: 560, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
     { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "magenta"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Topsheet-1x1.jpg?v=1750405167" },
-    { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
+    { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Capsule-Topsheet-1x1.jpg?v=1750406448" },
     { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["black", "purple"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-3-Topsheet-1x1.jpg?v=1750405805" },
     { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
     { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["olive", "navy"], tier: "mid", image: "https://cdn.media.amplience.net/s/k2/k2_2627_mindbender-90_KS261793-KS261794?w=1200&qlt=90&fmt=auto" },
@@ -309,11 +308,11 @@ const CATALOG = {
     { id: "sw5", name: "Maven 93 C (26/27)", brand: "Atomic", price: 700, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["sky", "white"], tier: "mid" },
     { id: "sw6", name: "Pandora 92 (26/27)", brand: "Line", price: 720, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["black"], tier: "mid", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_pandora-92_LN261765?w=1200&qlt=90&fmt=auto" },
     { id: "sw7", name: "Sheeva 10 (26/27)", brand: "Blizzard", price: 800, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "moguls"], style: ["freeride"], colors: ["magenta", "purple"], tier: "premium", image: "https://www.blizzard-tecnica.com/storage/Product/8A536600-001_SHEEVA_10_flat_01.png" },
-    { id: "sw8", name: "Secret 96 (26/27)", brand: "Völkl", price: 875, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
+    { id: "sw8", name: "M7 Mantra W (26/27)", brand: "Völkl", price: 875, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["mint", "magenta"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2skis/volkl_2627_m7-mantra-w_V2610116?w=1200&qlt=90&fmt=auto" },
     { id: "sw10", name: "Antimatter 88 (26/27)", brand: "Armada", price: 780, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
     { id: "sw11", name: "Dancer 79 (26/27)", brand: "Faction", price: 720, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
     { id: "sw12", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sw13", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
+    { id: "sw13", name: "Prodigy 2 Capsule (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["cream", "red"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Capsule-Topsheet-1x1.jpg?v=1750406708" },
     { id: "sw14", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["black"], tier: "premium" },
     { id: "sw15", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
     { id: "sw16", name: "ARW 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
@@ -330,7 +329,7 @@ const CATALOG = {
     { id: "jm20", name: "Baggy Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_M_01.jpg?width=800" },
     { id: "jm23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_M_01.jpg?width=800" },
     { id: "jm24", name: "Twin Line 30K Snow Jacket — Frost Purple", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/12/B05A0130-819x1024.jpg" },
-    { id: "jm21", name: "HIDA Ski Jacket", brand: "GSOU SNOW", price: 220, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false },
+    { id: "jm21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_M_01.jpg?width=800" },
     { id: "jm22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2689-ARG_M_01.jpg?width=800" },
     { id: "jm7", name: "Ceptor Jacket", brand: "The North Face", price: 475, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["white"], tier: "mid", fit: "regular", shell: true },
     { id: "jm8", name: "Hex GORE-TEX Jacket", brand: "The North Face", price: 500, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
@@ -344,7 +343,7 @@ const CATALOG = {
     { id: "jw20", name: "Baggy Snowboard Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_F_01.jpg?width=800" },
     { id: "jw23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_F_01.jpg?width=800" },
     { id: "jw24", name: "Twin Line 30K Snow Jacket — Pink Black", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["blush", "black"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/07/1-819x1024.jpg" },
-    { id: "jw21", name: "HIDA Ski Jacket", brand: "GSOU SNOW", price: 220, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false },
+    { id: "jw21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_F_01.jpg?width=800" },
     { id: "jw22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2608-ARG_F_01.jpg?width=800" },
     { id: "jw11", name: "Luminal 3L Jacket (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
     { id: "jw7", name: "Superlu Jacket", brand: "The North Face", price: 480, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["white"], tier: "premium", fit: "baggy", shell: false },
@@ -361,8 +360,8 @@ const CATALOG = {
     { id: "jf4", name: "Light Gray Retro Track Stripe Reflective Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-WJK2720-GREY_F_01.jpg?width=800" },
     { id: "jf5", name: "Navy Retro Track Chevron Stripe Snow Jacket", brand: "GSOU SNOW", price: 154, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2619-191_M_01.jpg?width=800" },
     { id: "jf6", name: "Navy Retro Track Chevron Stripe Snow Jacket", brand: "GSOU SNOW", price: 154, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2619-191_F_K_1.jpg?width=800" },
-    { id: "jf7", name: "Olive Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf8", name: "Olive Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true },
+    { id: "jf7", name: "Color-Block Dark Olive & Black Corduroy Snow Jacket", brand: "GSOU SNOW", price: 156, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2658-582_M_01.jpg?width=800" },
+    { id: "jf8", name: "Color-Block Dark Olive & Black Corduroy Snow Jacket", brand: "GSOU SNOW", price: 156, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2658-582_F_01.jpg?width=800" },
     { id: "jf11", name: "Twin Line 30K Snow Jacket — Brown Beige", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/01/Image_20260102155217_1625_73.jpg" },
     { id: "jf12", name: "Twin Line 30K Snow Jacket — Grey Black", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate", "black"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0130-819x1024.jpg" },
     { id: "jf13", name: "Sky Blue Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/FullSizeRender_dcbac7db-af64-4d11-9842-3f1c030c230b.jpg?width=800" },
@@ -463,47 +462,46 @@ const CATALOG = {
   ],
   goggles: [
     { id: "g1", name: "Helix 2.0 Goggles", brand: "Anon", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0648/9266/5939/files/hwtmxvu4ezsqrngyquqi.webp?width=800" },
-    { id: "g9", name: "Squad ChromaPop Goggles", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["black"], tier: "value" },
-    { id: "g10", name: "Squad ChromaPop Goggles — White", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
+    { id: "g9", name: "Squad ChromaPop Goggles", brand: "Smith", price: 135, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/squad-goggles_black-cpEverydayGreenMirror_FRONT.png?width=800" },
+    { id: "g10", name: "Squad ChromaPop Goggles — White", brand: "Smith", price: 135, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/M007880OZ9941_Squad_White_Vapor_ChromaPopEverydayVioletMirror_3Q.png?width=800" },
     { id: "g11", name: "Line Miner Prizm Goggles — Black", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "g12", name: "Comp Goggles", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black"], tier: "value" },
-    { id: "g13", name: "Revolt Goggles", brand: "Giro", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
+    { id: "g12", name: "Comp Goggles", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black"], tier: "value", image: "https://vault.widen.net/content/opwpnq3cdi?w=1500&h=1500" },
+    { id: "g13", name: "Revolt Goggles", brand: "Giro", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value", image: "https://vault.widen.net/content/wzwhyirwzv?w=1500&h=1500" },
     { id: "g14", name: "M5 Goggles", brand: "Anon", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0648/9266/5939/files/cd1999e2bf94cfba28d39226a55e5d9d4b0d3fde.webp?width=800" },
-    { id: "g15", name: "PRO OTG Goggles", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
-    { id: "g16", name: "PRO OTG Goggles — White", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value" },
+    { id: "g15", name: "PRO OTG Goggles", brand: "OutdoorMaster", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0330/6389/5085/files/outdoormaster-otg_snow_goggles-ski-goggles-black_frame_vlt_10_00001.webp?width=800" },
+    { id: "g16", name: "PRO OTG Goggles — White", brand: "OutdoorMaster", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0330/6389/5085/files/outdoormaster-otg_snow_goggles-ski-goggles-white_frame_vlt_13_00001.webp?width=800" },
     { id: "gr1", name: "Drift — Pure Silver", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["silver"], tier: "value" },
     { id: "gr2", name: "Drift — Glacier Blue", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["sky"], tier: "value" },
     { id: "gr3", name: "Speedlane — Ice Blue Mirror", brand: "RUFE", price: 42, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["classic", "race"], colors: ["turquoise"], tier: "value" },
     { id: "g2", name: "Squad Mag Goggles", brand: "Smith", price: 265, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/squad-mag-goggles_black-cpSunBlackGoldMirror_3Q.png?width=800" },
     { id: "g3", name: "Line Miner Prizm Goggles", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "mid", image: "https://assets2.oakley.com/prod-onecp-record-files/pieyewear/0172b1ec-840a-4426-8b5c-b35e00f32d63/0OO7070__707013__OOE__shad__030A.png?impolicy=OO_ratio&width=800" },
     { id: "g4", name: "M4 Toric Goggles", brand: "Anon", price: 250, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "freeride"], colors: ["charcoal", "orange"], tier: "premium" },
-    { id: "g5", name: "Sentry Pro Goggles", brand: "Salomon", price: 200, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["forest", "black"], tier: "mid" },
-    { id: "g6", name: "Contour Goggles", brand: "Giro", price: 260, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "premium" },
+    { id: "g5", name: "Sentry Pro Goggles", brand: "Salomon", price: 200, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["black"], tier: "mid", image: "https://cdn.dam.salomon.com/aa328169-00cf-432d-8f67-b2f3013c711c/L47895200/PNG-2000px-max-72dpi.png?pad=0.12,0.12,0.12,0.12" },
+    { id: "g6", name: "Contour Goggles", brand: "Giro", price: 260, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://vault.widen.net/content/onp0hmuh8u?w=1500&h=1500" },
     { id: "g7", name: "4D Mag Goggles", brand: "Smith", price: 355, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/4d-mag-goggles_black-cpSunGreenMirror_3Q.png?width=800" },
     { id: "g8", name: "Flight Deck Prizm Goggles", brand: "Oakley", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
   ],
   helmet: [
-    { id: "h1", name: "Ledge MIPS Helmet", brand: "Giro", price: 90, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
+    { id: "h1", name: "Ledge MIPS Helmet", brand: "Giro", price: 90, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://vault.widen.net/content/huocdzxcii?w=1500&h=1500" },
     { id: "h2", name: "Method MIPS Helmet", brand: "Smith", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/method-helmet_matteBlack_3Q_5da8a4a1-4fab-4048-9b7d-3c8ac8ede83b.png?width=800" },
-    { id: "h3", name: "Chase 2 Plus Helmet", brand: "Scott", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["white"], tier: "mid" },
+    { id: "h3", name: "Chase 2 Plus Helmet", brand: "Scott", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["black"], tier: "mid", image: "https://static.scott-sports.com/image/upload/v1778020329/1494473.png" },
     { id: "h4", name: "Mission MIPS Helmet", brand: "Smith", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["moguls", "groomed"], style: ["classic", "freeride"], colors: ["black"], tier: "mid" },
-    { id: "h5", name: "Neo MIPS Helmet", brand: "Giro", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "park"], style: ["freeride", "street"], colors: ["white"], tier: "mid" },
-    { id: "h8", name: "Trig MIPS Helmet", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "h9", name: "Union MIPS Helmet", brand: "Giro", price: 190, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white"], tier: "premium" },
+    { id: "h5", name: "Neo MIPS Helmet", brand: "Giro", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "park"], style: ["freeride", "street"], colors: ["white"], tier: "mid", image: "https://vault.widen.net/content/rgiwr9aauz?w=1500&h=1500" },
+    { id: "h8", name: "Trig MIPS Helmet", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["black"], tier: "mid", image: "https://vault.widen.net/content/c4p2fi338y?w=1500&h=1500" },
     { id: "h6", name: "Vantage 2 MIPS Helmet", brand: "Smith", price: 295, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["sand"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/E005632NV5559_Vantage_2_Mips_Matte_Chalk_3Q.png?width=800" },
-    { id: "h7", name: "Flow Pro MIPS Helmet", brand: "Scott", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice", "backcountry"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
+    { id: "h7", name: "Flow Pro MIPS Helmet", brand: "Scott", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice", "backcountry"], style: ["race", "classic"], colors: ["black"], tier: "premium", image: "https://static.scott-sports.com/image/upload/v1778088828/2082990.png" },
   ],
   gloves: [
-    { id: "gl1", name: "PowderBound Gloves", brand: "Columbia", price: 75, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
+    { id: "gl1", name: "PowderBound Gloves", brand: "Columbia", price: 75, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://media.columbia.com/i/columbia/2097011_010_f_pu" },
     { id: "gl2", name: "Gondy GORE-TEX Glove", brand: "Burton", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["sand"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/1032618R82_1.webp?width=800" },
     { id: "gl3", name: "Titan GORE-TEX Mitt", brand: "Dakine", price: 94, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "freeride"], colors: ["forest"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0242/3141/1792/files/TITANGORETEXMITTS-MULLEDBASIL-194626590424_10004299_MULLEDBASL-62M_MAIN.jpg?width=800" },
     { id: "gl4", name: "Mercury Mitt", brand: "Black Diamond", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["white"], tier: "mid" },
-    { id: "gl5", name: "Army Leather Heli Glove", brand: "Hestra", price: 200, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "moguls"], style: ["freeride", "classic"], colors: ["white"], tier: "premium" },
-    { id: "gl6", name: "Fall Line Glove", brand: "Hestra", price: 190, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["forest", "black"], tier: "mid" },
-    { id: "gl7", name: "Leather Fall Line Mitt", brand: "Hestra", price: 210, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "groomed"], style: ["retro", "freeride"], colors: ["cream", "sand"], tier: "premium" },
-    { id: "gl9", name: "901T Lined Heavy-Duty Pigskin Ski Mitt", brand: "Kinco", price: 55, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "backcountry", "groomed", "powder"], style: ["street", "freeride", "classic"], colors: ["sand"], tier: "value", customizable: true, note: "Natural tan leather — the classic. Most people dye, paint or Sharpie them to match their kit." },
-    { id: "glbv1", name: "Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "glbv2", name: "Black & White Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "white"], tier: "value" },
+    { id: "gl5", name: "Army Leather Heli Glove", brand: "Hestra", price: 200, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "moguls"], style: ["freeride", "classic"], colors: ["navy"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776176566637-30570-280_1_Meta.png?v=1776179516" },
+    { id: "gl6", name: "Fall Line Glove", brand: "Hestra", price: 190, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776024134785-3000780-100100_1_Meta.png?v=1776184531" },
+    { id: "gl7", name: "Leather Fall Line Mitt", brand: "Hestra", price: 210, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "groomed"], style: ["retro", "freeride"], colors: ["cream"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776024184266-3000781-060060_1_Meta.png?v=1776184615" },
+    { id: "gl9", name: "901T Lined Heavy-Duty Pigskin Ski Mitt", brand: "Kinco", price: 55, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "backcountry", "groomed", "powder"], style: ["street", "freeride", "classic"], colors: ["sand"], tier: "value", customizable: true, note: "Natural tan leather — the classic. Most people dye, paint or Sharpie them to match their kit.", image: "https://res.cloudinary.com/hdtsjhzsw/image/upload/s--I0aypAvn--/w_902,h_1024,c_lpad,b_white,f_jpg/d6d8ba7fb14701d0fed1eb320956bf77bdc831ac.png" },
+    { id: "glbv1", name: "Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/1E8B0C17-3315-4D47-8BEE-05C8442D2379.png?width=800" },
+    { id: "glbv2", name: "Black & White Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/BCE8BC29-F9E8-44B5-931B-C5883B77291E.png?width=800" },
     { id: "gl11", name: "Black Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00193.jpg?width=800" },
     { id: "gl12", name: "White Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00196.jpg?width=800" },
     { id: "gl13", name: "Pink Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00708.jpg?width=800" },
@@ -556,37 +554,54 @@ function colorScore(item, chosen) {
   return 1 + (hits / sel.length) * 3;
 }
 
-function scoreItem(item, answers) {
+/* Skis and boards get judged on how they RIDE first and how they look
+   second. A black park ski is the wrong answer for someone who asked to
+   carve, however perfectly the topsheet matches their palette - you can
+   wear a jacket that clashes, but you can't ride the wrong ski. Colour
+   still counts underfoot, it just breaks ties between boards that
+   already suit the riding rather than deciding the pick.
+
+   Apparel is the opposite: coordinating the outfit IS the product, so
+   colour carries as much weight there as terrain does. */
+const RIDE_FIRST_WEIGHTS = { ability: 6, terrain: 9, style: 9, color: 0.5 };
+const OUTFIT_WEIGHTS = { ability: 4, terrain: 4, style: 4, color: 1 };
+const weightsFor = (category) => (category === "skis" ? RIDE_FIRST_WEIGHTS : OUTFIT_WEIGHTS);
+
+function scoreItem(item, answers, category) {
+  const w = weightsFor(category);
   let score = 0;
-  if (item.ability.includes(answers.ability)) score += 4;
+  if (item.ability.includes(answers.ability)) score += w.ability;
 
   const terrainSel = answers.terrain || [];
   if (terrainSel.length) {
     const matched = item.terrain.filter((t) => terrainSel.includes(t)).length;
-    score += (matched / terrainSel.length) * 4;
+    score += (matched / terrainSel.length) * w.terrain;
   }
 
   const styleSel = answers.style || [];
   if (styleSel.length) {
     const matched = item.style.filter((s) => styleSel.includes(s)).length;
-    score += (matched / styleSel.length) * 4;
+    score += (matched / styleSel.length) * w.style;
   }
 
-  score += colorScore(item, answers.colors);
+  score += colorScore(item, answers.colors) * w.color;
   score += tierProximity(item.tier, answers.budget);
   if (item.fit && item.fit === answers.fit) score += 3;
   return score;
 }
 
-/* Raw score → a friendly percentage for the "match" badge on each
-   card. Ceiling of 22 is the max any item could realistically earn
-   (4 ability + 4 terrain + 4 style + 4 color + 3 tier + 3 fit).
+/* Raw score → a friendly percentage for the "match" badge on each card.
+   The ceiling differs by category because the weights do: skis top out
+   at 29 (6 ability + 9 terrain + 9 style + 2 colour + 3 tier, and no fit
+   field on a ski), apparel at 22 (4+4+4+4 + 3 tier + 3 fit). Using one
+   shared ceiling would make every ski read as a worse match than it is.
    Bounded so it never claims a hollow 100% or an alarming near-zero. */
-const MAX_MATCH_SCORE = 22;
+const MAX_MATCH_SCORE = { skis: 29, default: 22 };
 function matchPercent(item, category, answers, fit, pantFit) {
   const target = category === "pants" ? { ...answers, fit: pantFit } : { ...answers, fit };
-  const raw = scoreItem(item, target);
-  return Math.max(80, Math.min(98, Math.round((raw / MAX_MATCH_SCORE) * 100) + 20));
+  const raw = scoreItem(item, target, category);
+  const ceiling = MAX_MATCH_SCORE[category] ?? MAX_MATCH_SCORE.default;
+  return Math.max(80, Math.min(98, Math.round((raw / ceiling) * 100) + 20));
 }
 
 const TERRAIN_LENGTH_OFFSET = { groomed: -18, ice: -16, moguls: -20, park: -24, powder: -8, backcountry: -6 };
@@ -785,10 +800,10 @@ function buildRankings(answers, sport) {
 
     const target = category === "pants" ? { ...scored, fit: pantFit } : scored;
     const sorted = [...workingPool].sort((a, b) => {
-      const diff = scoreItem(b, target) - scoreItem(a, target);
+      const diff = scoreItem(b, target, category) - scoreItem(a, target, category);
       return diff !== 0 ? diff : a.price - b.price;
     });
-    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target));
+    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target, category));
   });
 
   /* Colour variety across the outfit.
