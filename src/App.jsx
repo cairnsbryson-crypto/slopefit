@@ -556,37 +556,54 @@ function colorScore(item, chosen) {
   return 1 + (hits / sel.length) * 3;
 }
 
-function scoreItem(item, answers) {
+/* Skis and boards get judged on how they RIDE first and how they look
+   second. A black park ski is the wrong answer for someone who asked to
+   carve, however perfectly the topsheet matches their palette - you can
+   wear a jacket that clashes, but you can't ride the wrong ski. Colour
+   still counts underfoot, it just breaks ties between boards that
+   already suit the riding rather than deciding the pick.
+
+   Apparel is the opposite: coordinating the outfit IS the product, so
+   colour carries as much weight there as terrain does. */
+const RIDE_FIRST_WEIGHTS = { ability: 6, terrain: 9, style: 9, color: 0.5 };
+const OUTFIT_WEIGHTS = { ability: 4, terrain: 4, style: 4, color: 1 };
+const weightsFor = (category) => (category === "skis" ? RIDE_FIRST_WEIGHTS : OUTFIT_WEIGHTS);
+
+function scoreItem(item, answers, category) {
+  const w = weightsFor(category);
   let score = 0;
-  if (item.ability.includes(answers.ability)) score += 4;
+  if (item.ability.includes(answers.ability)) score += w.ability;
 
   const terrainSel = answers.terrain || [];
   if (terrainSel.length) {
     const matched = item.terrain.filter((t) => terrainSel.includes(t)).length;
-    score += (matched / terrainSel.length) * 4;
+    score += (matched / terrainSel.length) * w.terrain;
   }
 
   const styleSel = answers.style || [];
   if (styleSel.length) {
     const matched = item.style.filter((s) => styleSel.includes(s)).length;
-    score += (matched / styleSel.length) * 4;
+    score += (matched / styleSel.length) * w.style;
   }
 
-  score += colorScore(item, answers.colors);
+  score += colorScore(item, answers.colors) * w.color;
   score += tierProximity(item.tier, answers.budget);
   if (item.fit && item.fit === answers.fit) score += 3;
   return score;
 }
 
-/* Raw score → a friendly percentage for the "match" badge on each
-   card. Ceiling of 22 is the max any item could realistically earn
-   (4 ability + 4 terrain + 4 style + 4 color + 3 tier + 3 fit).
+/* Raw score → a friendly percentage for the "match" badge on each card.
+   The ceiling differs by category because the weights do: skis top out
+   at 29 (6 ability + 9 terrain + 9 style + 2 colour + 3 tier, and no fit
+   field on a ski), apparel at 22 (4+4+4+4 + 3 tier + 3 fit). Using one
+   shared ceiling would make every ski read as a worse match than it is.
    Bounded so it never claims a hollow 100% or an alarming near-zero. */
-const MAX_MATCH_SCORE = 22;
+const MAX_MATCH_SCORE = { skis: 29, default: 22 };
 function matchPercent(item, category, answers, fit, pantFit) {
   const target = category === "pants" ? { ...answers, fit: pantFit } : { ...answers, fit };
-  const raw = scoreItem(item, target);
-  return Math.max(80, Math.min(98, Math.round((raw / MAX_MATCH_SCORE) * 100) + 20));
+  const raw = scoreItem(item, target, category);
+  const ceiling = MAX_MATCH_SCORE[category] ?? MAX_MATCH_SCORE.default;
+  return Math.max(80, Math.min(98, Math.round((raw / ceiling) * 100) + 20));
 }
 
 const TERRAIN_LENGTH_OFFSET = { groomed: -18, ice: -16, moguls: -20, park: -24, powder: -8, backcountry: -6 };
@@ -785,10 +802,10 @@ function buildRankings(answers, sport) {
 
     const target = category === "pants" ? { ...scored, fit: pantFit } : scored;
     const sorted = [...workingPool].sort((a, b) => {
-      const diff = scoreItem(b, target) - scoreItem(a, target);
+      const diff = scoreItem(b, target, category) - scoreItem(a, target, category);
       return diff !== 0 ? diff : a.price - b.price;
     });
-    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target));
+    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target, category));
   });
 
   /* Colour variety across the outfit.
