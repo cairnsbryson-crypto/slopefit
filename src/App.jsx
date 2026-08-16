@@ -138,6 +138,12 @@ const AFFILIATE_IDS = {
   cj: null,           // e.g. "1234567" - covers Mountain Hardwear, etc.
 };
 
+/* Set this before applying to any affiliate network. Every one of them
+   checks that a real person is reachable, and an unreachable publisher
+   is a standard rejection reason. The contact block on the About page
+   renders only once this is filled in. */
+const CONTACT_EMAIL = "";
+
 function buildShopLink(item, displayColorLabels) {
   const query = `${item.brand} ${item.name} ${displayColorLabels.join(" ")}`.trim();
 
@@ -1201,6 +1207,21 @@ function GearFigure({ colors, sport, pantFit = "regular" }) {
   );
 }
 
+/* Numbered section for the About page. Long-form prose is the one place
+   in this app that needs a comfortable reading measure, so the body is
+   capped rather than filling the container. */
+function AboutSection({ n, title, children }) {
+  return (
+    <section className="mb-11">
+      <div className="flex items-baseline gap-3 mb-3">
+        <span className="text-xs font-bold tracking-[0.2em] text-white/30 tabular-nums">{n}</span>
+        <h2 className="font-['Barlow_Condensed'] font-bold text-2xl uppercase tracking-wide leading-none">{title}</h2>
+      </div>
+      <div className="pl-0 sm:pl-9 max-w-xl text-sm text-white/60 leading-relaxed space-y-3.5">{children}</div>
+    </section>
+  );
+}
+
 function SkierMarker({ sport }) {
   if (sport === "snowboard") {
     return (
@@ -1498,6 +1519,12 @@ export default function SlopeFit() {
     setClickedPlan(null);
   }
 
+  function goToAbout() {
+    setPreviousPhase(phase);
+    setPhase("about");
+    window.scrollTo({ top: 0 });
+  }
+
   const canAdvance = (() => {
     switch (currentKey) {
       case "gender": return !!answers.gender;
@@ -1690,7 +1717,7 @@ export default function SlopeFit() {
             )}
             {phase === "intro" ? (
               <button onClick={() => setPhase("quiz")} className="text-xs uppercase tracking-widest font-bold bg-white text-black px-4 py-2 rounded-full hover:bg-white/85 transition-colors flex-shrink-0">Start</button>
-            ) : phase !== "premium" && (
+            ) : phase !== "premium" && phase !== "about" && (
               <span className="text-xs uppercase tracking-widest text-white/50 font-semibold flex-shrink-0">
                 {phase === "quiz" ? `Step ${stepIndex + 1} / ${STEPS.length}` : "Your Setup"}
               </span>
@@ -1800,6 +1827,12 @@ export default function SlopeFit() {
                   className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors border-l border-white/15 pl-3"
                 >
                   Switch to {sport === "snowboard" ? "Skiing" : "Snowboarding"}
+                </button>
+                <button
+                  onClick={goToAbout}
+                  className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors border-l border-white/15 pl-3"
+                >
+                  How we pick
                 </button>
               </div>
               <p className="text-xs text-white/35 max-w-md sm:text-right leading-relaxed">
@@ -2256,7 +2289,146 @@ export default function SlopeFit() {
             <div className="flex flex-wrap items-center gap-5">
               <button onClick={restart} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><RotateCcw size={16} /> Start over</button>
               <button onClick={() => { setStepIndex(0); setPhase("quiz"); }} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ChevronLeft size={16} /> Change my answers</button>
+              <button onClick={goToAbout} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ListChecks size={16} /> How we picked this</button>
             </div>
+          </div>
+        )}
+
+        {phase === "about" && (
+          <div style={{ animation: "slopefitIn 0.4s ease" }} className="pb-6">
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mb-6">
+              <ChevronLeft size={18} /> Back
+            </button>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">About</p>
+            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-4 leading-[0.95]">How SlopeFit<br />picks your gear</h1>
+            {/* Long-form prose needs a scrim. The mountain art sits behind
+                every phase, and unlike the card-based screens this page puts
+                body text straight onto it - the ridge lines cut through
+                paragraphs badly, on mobile especially. */}
+            <div className="rounded-2xl border border-white/12 bg-black/80 p-6 sm:p-8 mb-8">
+            <p className="text-base text-white/65 max-w-xl mb-12 leading-relaxed">
+              SlopeFit is a gear-matching tool, not a shop. You answer a short quiz, and a scoring
+              model ranks {stats.products} products from {stats.brands} brands against your answers to
+              build one coordinated setup. This page explains exactly how that works, how gear earns a
+              place in the catalog, and what the tool can't do — so you can judge the recommendations
+              for yourself.
+            </p>
+
+            <AboutSection n="01" title="The matching model">
+              <p>
+                Every item carries tags for ability level, terrain, riding style, colour, price tier
+                and — for outerwear — cut. Your answers are scored against those tags, and the highest
+                scoring item in each category becomes your featured pick. Nothing is hand-picked and
+                nothing is sponsored.
+              </p>
+              <p>
+                The weighting is not the same across categories, on purpose. <strong className="text-white/85">For skis
+                and boards, how you ride outranks how it looks.</strong> Terrain and style each carry
+                roughly eighteen times the weight of colour, because a black race ski is a bad answer
+                to "I ride park" no matter how well the colour lines up. Ability sits just behind them.
+              </p>
+              <p>
+                <strong className="text-white/85">For outerwear and accessories the balance flips
+                toward colour</strong>, which is the whole point of a coordinated kit. Ability, terrain
+                and style still lead, but colour counts for meaningfully more than it does on hardgoods.
+              </p>
+              <p>
+                Two hard rules override the scoring. Your budget is a ceiling, not a suggestion — nothing
+                above your selected tier is shown unless a category has nothing at or below it. And if
+                anything in the pool matches the colours you picked, something matching them is what you
+                get; a better score elsewhere can't take that slot.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="02" title="Sizing and fit">
+              <p>
+                Ski and board length is calculated from your height and weight, then adjusted for
+                ability and terrain — powder and freeride push longer, park pushes shorter, beginners
+                come down a little. Apparel sizing works off height and build, with a nudge from BMI at
+                the extremes.
+              </p>
+              <p>
+                Cut is driven by your style rather than your measurements alone. Park and street answers
+                return baggy outright, race returns slim outright, and everything between leans on build.
+                Snowboarders get relaxed-fit pants regardless of style, because that is what riders
+                actually wear for boot and stance mobility.
+              </p>
+              <p className="text-white/45">
+                These are starting points, not fittings. Boot sizing especially should be done in person.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="03" title="How gear gets into the catalog">
+              <p>The catalog is built by hand against a fixed standard. To be listed, a product must:</p>
+              <ul className="list-none space-y-2.5 my-4">
+                {[
+                  "Actually exist. Every item is checked against the brand's own live product feed — not a description, not a lookalike, the exact product.",
+                  "Carry the brand's own photography, verified to load and to show the colourway named.",
+                  "Have its colour tags measured from that photograph, rather than taken from the marketing name. Colourways called things like \"Atomic Mint\" or \"Flood Blue\" rarely describe what you actually see.",
+                  "Come from a brand that makes or commissions its own product.",
+                ].map((t) => (
+                  <li key={t} className="flex gap-3 items-start">
+                    <Check size={16} strokeWidth={3} className="mt-1 flex-shrink-0 opacity-70" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+              <p>
+                That last rule has teeth. Brands have been removed after their "own" product photos turned
+                out to be supplier images lifted from AliExpress — same file, same filename, still live on
+                the supplier's servers. Relabelled dropship gear doesn't belong next to a Hestra mitt, so
+                it goes.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="04" title="Independence">
+              <p>
+                No brand pays to appear here, and no brand can pay to rank higher. Ranking comes from your
+                answers and the tags above — there is no field in the catalog that a brand could buy.
+              </p>
+              <p>
+                Some "Shop" links may be affiliate links, meaning we could earn a commission if you buy
+                through them, at no extra cost to you. That commission never influences what gets
+                recommended: the scoring runs before any link is built, and the code has no access to
+                commission rates.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="05" title="What this tool can't do">
+              <ul className="list-none space-y-2.5 my-1">
+                {[
+                  "Prices drift and stock sells out. Figures shown are what the brand listed when the item was added — always confirm on the retailer's page before buying.",
+                  "Non-USD prices are converted at approximate fixed rates, not a live feed.",
+                  "Colour on a screen is not colour in daylight, and mirrored goggle lenses in particular photograph very differently from how they look on your face.",
+                  "It can't replace a boot fitter, a demo day, or asking someone at your local hill.",
+                ].map((t) => (
+                  <li key={t} className="flex gap-3 items-start">
+                    <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </AboutSection>
+
+            {CONTACT_EMAIL && (
+              <AboutSection n="06" title="Get in touch">
+                <p>
+                  Spotted a product that's wrong, discontinued, or mispriced? Tell us and it gets fixed —
+                  corrections are the main way the catalog stays honest.
+                </p>
+                <p>
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                    {CONTACT_EMAIL}
+                  </a>
+                </p>
+              </AboutSection>
+            )}
+            </div>
+
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mt-4">
+              <ChevronLeft size={16} /> Back to {previousPhase === "results" ? "your setup" : "SlopeFit"}
+            </button>
           </div>
         )}
 
