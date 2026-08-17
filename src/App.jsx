@@ -138,11 +138,10 @@ const AFFILIATE_IDS = {
   cj: null,           // e.g. "1234567" - covers Mountain Hardwear, etc.
 };
 
-/* Set this before applying to any affiliate network. Every one of them
-   checks that a real person is reachable, and an unreachable publisher
-   is a standard rejection reason. The contact block on the About page
-   renders only once this is filled in. */
-const CONTACT_EMAIL = "";
+/* Affiliate networks all check that a real person is reachable, and an
+   unreachable publisher is a standard rejection reason. The contact
+   block on the About page renders only while this is set. */
+const CONTACT_EMAIL = "cairnsbryson@gmail.com";
 
 function buildShopLink(item, displayColorLabels) {
   const query = `${item.brand} ${item.name} ${displayColorLabels.join(" ")}`.trim();
@@ -1817,30 +1816,38 @@ export default function SlopeFit() {
             </div>
 
             <footer className="pt-8 mt-2 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center gap-3">
+              {/* Wraps rather than overflowing - the footer container is only
+                  768px and now carries three links beside the disclosure.
+                  Separators are gaps, not left-borders, because a border
+                  reads as a stray mark once an item wraps to its own line. */}
+              <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Mountain size={16} color="#FFFFFF" strokeWidth={2.6} opacity={0.6} />
                   <span className="font-['Barlow_Condensed'] font-bold text-sm tracking-wide uppercase text-white/60">SlopeFit</span>
                 </div>
                 <button
                   onClick={() => setPhase("sport-select")}
-                  className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors border-l border-white/15 pl-3"
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
                 >
                   Switch to {sport === "snowboard" ? "Skiing" : "Snowboarding"}
                 </button>
                 <button
                   onClick={goToAbout}
-                  className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors border-l border-white/15 pl-3"
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
                 >
                   How we pick
                 </button>
               </div>
-              <p className="text-xs text-white/35 max-w-md sm:text-right leading-relaxed">
+              {/* The affiliate disclosure has to be legible to count as one.
+                  At white/35 over the crosshatch it was effectively invisible
+                  on mobile, which is both an FTC "clear and conspicuous"
+                  problem and something networks check for at review. */}
+              <p className="text-xs text-white/70 max-w-md sm:text-right leading-relaxed">
                 Some links may be affiliate links — we may earn a commission at no extra cost to you, and it
                 never influences which gear gets recommended.
                 <br />
-                Prototype — not affiliated with or endorsed by any brand shown. Product names and prices are
-                for demonstration and should be verified before purchase.
+                Not affiliated with or endorsed by any brand shown. Prices and availability change —
+                confirm on the retailer's page before buying.
               </p>
             </footer>
           </div>
