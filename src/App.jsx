@@ -143,6 +143,10 @@ const AFFILIATE_IDS = {
    block on the About page renders only while this is set. */
 const CONTACT_EMAIL = "cairnsbryson@gmail.com";
 
+/* Bump whenever the privacy or terms copy changes materially - the date
+   shown on the legal page has to reflect the text actually on screen. */
+const LEGAL_UPDATED = "17 August 2026";
+
 function buildShopLink(item, displayColorLabels) {
   const query = `${item.brand} ${item.name} ${displayColorLabels.join(" ")}`.trim();
 
@@ -1524,6 +1528,14 @@ export default function SlopeFit() {
     window.scrollTo({ top: 0 });
   }
 
+  function goToLegal() {
+    /* Don't record another legal/about page as the return target, or Back
+       bounces between the two instead of returning to the real screen. */
+    if (phase !== "legal" && phase !== "about") setPreviousPhase(phase);
+    setPhase("legal");
+    window.scrollTo({ top: 0 });
+  }
+
   const canAdvance = (() => {
     switch (currentKey) {
       case "gender": return !!answers.gender;
@@ -1716,7 +1728,7 @@ export default function SlopeFit() {
             )}
             {phase === "intro" ? (
               <button onClick={() => setPhase("quiz")} className="text-xs uppercase tracking-widest font-bold bg-white text-black px-4 py-2 rounded-full hover:bg-white/85 transition-colors flex-shrink-0">Start</button>
-            ) : phase !== "premium" && phase !== "about" && (
+            ) : phase !== "premium" && phase !== "about" && phase !== "legal" && (
               <span className="text-xs uppercase tracking-widest text-white/50 font-semibold flex-shrink-0">
                 {phase === "quiz" ? `Step ${stepIndex + 1} / ${STEPS.length}` : "Your Setup"}
               </span>
@@ -1836,6 +1848,12 @@ export default function SlopeFit() {
                   className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
                 >
                   How we pick
+                </button>
+                <button
+                  onClick={goToLegal}
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Privacy &amp; terms
                 </button>
               </div>
               {/* The affiliate disclosure has to be legible to count as one.
@@ -2301,6 +2319,181 @@ export default function SlopeFit() {
           </div>
         )}
 
+        {phase === "legal" && (
+          <div style={{ animation: "slopefitIn 0.4s ease" }} className="pb-6">
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mb-6">
+              <ChevronLeft size={18} /> Back
+            </button>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Legal</p>
+            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-3 leading-[0.95]">Privacy<br />and terms</h1>
+            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-8">Last updated {LEGAL_UPDATED}</p>
+
+            <div className="rounded-2xl border border-white/12 bg-black/80 p-6 sm:p-8 mb-8">
+              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5">Privacy</h2>
+              <div className="rounded-xl border border-white/15 bg-white/[0.05] p-5 mb-10 max-w-xl">
+                <p className="text-sm text-white/75 leading-relaxed">
+                  <strong className="text-white">The short version:</strong> your quiz answers — including
+                  your height and weight — never leave your browser. There are no analytics, no tracking
+                  pixels and no advertising cookies anywhere on this site. The only personal information
+                  we ever receive is your email address, and only if you choose to sign in.
+                </p>
+              </div>
+
+              <AboutSection n="01" title="What stays on your device">
+                <p>
+                  The quiz runs entirely in your browser. Your answers — gender, ability, terrain, style,
+                  height, weight, colours and budget — are held in memory while you use the page and are
+                  gone when you close the tab. They are never transmitted to us or to anyone else.
+                </p>
+                <p>A few small values are saved in your browser's local storage:</p>
+                <ul className="list-none space-y-2 my-3">
+                  {[
+                    ["slopefit_auth_attempts", "Timestamps of recent sign-in attempts, so the sign-in form can rate-limit itself. No email addresses are stored here."],
+                    ["slopefit_sport", "Whether you last chose skiing or snowboarding, so returning from a sign-in link puts you back where you were."],
+                    ["slopefit_return_to_premium", "A flag marking that you were heading to the Premium page when you signed in."],
+                  ].map(([k, v]) => (
+                    <li key={k}>
+                      <code className="text-white/85 text-[12px] bg-white/10 rounded px-1.5 py-0.5">{k}</code>
+                      <span className="block mt-1">{v}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p>
+                  If you sign in, Supabase — the service that handles authentication — also stores your
+                  session in local storage so you stay signed in. Clearing your browser's site data
+                  removes all of it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="02" title="What we hold on a server">
+                <p>
+                  Only if you sign in: your <strong className="text-white/85">email address</strong>, and a
+                  flag recording whether your account is Premium. That's the entire record. We do not store
+                  your quiz answers, your measurements, your recommendations or your browsing history
+                  against your account.
+                </p>
+                <p>
+                  Sign-in uses a one-time link sent to your email. We never ask for or store a password.
+                  Authentication and that record are handled by Supabase acting as our processor.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="03" title="What other companies can see">
+                <p>
+                  Being straight about this, because most sites aren't:
+                </p>
+                <ul className="list-none space-y-2.5 my-1">
+                  {[
+                    "Our host, Vercel, keeps standard server logs, which include IP addresses. That is ordinary web hosting, not analytics we run.",
+                    "Product photographs are loaded directly from each brand's own servers rather than copied onto ours. That means the brand's image host can see your IP address and which image was requested — the same as if you visited their site. It also means we are showing you the brand's real photo rather than a stale copy.",
+                    "If a \"Shop\" link is an affiliate link, following it hands you to that retailer or affiliate network, which will set its own cookies under its own privacy policy. We receive no personal information back — at most an anonymous record that a sale occurred.",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-3 items-start">
+                      <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AboutSection>
+
+              <AboutSection n="04" title="What we don't do">
+                <p>
+                  We do not sell, rent or share your personal information. We do not run advertising
+                  networks, analytics packages, session recorders or tracking pixels. We do not build a
+                  profile of you, and we do not email you anything except the sign-in link you asked for.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="05" title="Your choices">
+                <p>
+                  Clearing your browser's site data removes everything stored locally. Signing out ends
+                  your session. To see what we hold about you, or to have your account and email deleted
+                  entirely, email us and we'll action it — there isn't much to delete.
+                </p>
+                <p>
+                  SlopeFit isn't directed at children under 13, and we don't knowingly collect information
+                  from them.
+                </p>
+              </AboutSection>
+
+              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5 mt-14 pt-10 border-t border-white/12">Terms of use</h2>
+
+              <AboutSection n="06" title="What SlopeFit is">
+                <p>
+                  SlopeFit is a free tool that suggests gear based on a short questionnaire. Recommendations
+                  are informational. They are a starting point for your own research, not professional
+                  fitting advice, and not a guarantee that a product will suit you.
+                </p>
+                <p>
+                  We are not a retailer. We don't sell, stock, ship or handle returns for anything shown —
+                  every purchase is between you and whichever retailer you buy from, under their terms.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="07" title="Accuracy">
+                <p>
+                  Every product is checked against the brand's own live listing when it's added to the
+                  catalog, but prices change, colourways get discontinued and stock sells out. Figures shown
+                  are what the brand listed at the time, and non-USD prices are converted at approximate
+                  fixed rates. Always confirm price, size and availability on the retailer's own page before
+                  buying.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="08" title="Safety">
+                <p>
+                  Skiing and snowboarding carry real risk of serious injury. Nothing here is a substitute
+                  for properly fitted equipment. In particular, <strong className="text-white/85">bindings
+                  must be mounted and adjusted by a qualified technician</strong>, and helmets and boots
+                  should be fitted in person. Suggested lengths and sizes are calculated estimates, not a
+                  fitting.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="09" title="Brands and trademarks">
+                <p>
+                  All brand names, product names, logos and photographs belong to their respective owners
+                  and are used to identify the products described. SlopeFit is not affiliated with,
+                  endorsed by or sponsored by any brand shown. If you own a brand featured here and want a
+                  listing corrected or removed, email us and we'll handle it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="10" title="Accounts and acceptable use">
+                <p>
+                  Accounts are personal to you — the sign-in link sent to your email is effectively a
+                  password, so don't forward it. Don't attempt to scrape, overload or break the site, and
+                  don't reuse the catalog wholesale elsewhere.
+                </p>
+                <p>
+                  The service is provided "as is", without warranty. To the fullest extent permitted by
+                  law, we are not liable for losses arising from your use of the site or from any purchase
+                  you make through it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="11" title="Changes and contact">
+                <p>
+                  If these terms or the privacy policy change materially, the date at the top of this page
+                  changes with them. Questions about either, or about anything else on the site:
+                </p>
+                {CONTACT_EMAIL && (
+                  <p>
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                      {CONTACT_EMAIL}
+                    </a>
+                  </p>
+                )}
+              </AboutSection>
+            </div>
+
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mt-4">
+              <ChevronLeft size={16} /> Back to {previousPhase === "results" ? "your setup" : "SlopeFit"}
+            </button>
+          </div>
+        )}
+
         {phase === "about" && (
           <div style={{ animation: "slopefitIn 0.4s ease" }} className="pb-6">
             <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mb-6">
@@ -2428,6 +2621,13 @@ export default function SlopeFit() {
                   <a href={`mailto:${CONTACT_EMAIL}`} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
                     {CONTACT_EMAIL}
                   </a>
+                </p>
+                <p>
+                  See also our{" "}
+                  <button onClick={goToLegal} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                    privacy policy and terms
+                  </button>
+                  .
                 </p>
               </AboutSection>
             )}
