@@ -1746,10 +1746,10 @@ export default function SlopeFit() {
 
       {phase === "intro" && (
         <button
-          onClick={() => scrollToSection("how-it-works")}
+          onClick={goToAbout}
           className="fixed right-0 top-1/2 -translate-y-1/2 z-30 flex items-center bg-black border border-white/25 border-r-0 rounded-l-lg px-2 py-4 hover:border-white/60 hover:bg-white/10 transition-colors"
           style={{ writingMode: "vertical-rl" }}
-          aria-label="Jump to how we pick your gear"
+          aria-label="See how we pick your gear"
         >
           <span
             className="text-[11px] uppercase tracking-widest font-bold text-white/70 hover:text-white transition-colors"
