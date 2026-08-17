@@ -12,6 +12,42 @@ const FONT_IMPORT = `
 `;
 
 /* ---------------------------------------------------------
+   SIGN-IN COOLDOWN — a client-side UX throttle only. This does
+   NOT stop abuse on its own: it's plain localStorage, so clearing
+   storage, using a private window, or calling Supabase directly
+   bypasses it entirely. The actual enforced protection against
+   OTP abuse lives server-side in Supabase (Dashboard → Authentication
+   → Rate Limits) - that's what to configure for real security.
+   This just keeps the UI from hammering signInWithOtp with repeat
+   clicks and gives the user a clear "try again in N minutes" cue.
+--------------------------------------------------------- */
+const AUTH_ATTEMPT_LIMIT = 5;
+const AUTH_ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_ATTEMPTS_KEY = "slopefit_auth_attempts";
+
+function getRecentAuthAttempts() {
+  let stored = [];
+  try {
+    stored = JSON.parse(localStorage.getItem(AUTH_ATTEMPTS_KEY) || "[]");
+  } catch {
+    stored = [];
+  }
+  const cutoff = Date.now() - AUTH_ATTEMPT_WINDOW_MS;
+  const recent = stored.filter((t) => typeof t === "number" && t > cutoff);
+  if (recent.length !== stored.length) {
+    localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  }
+  return recent;
+}
+
+function recordAuthAttempt() {
+  const recent = getRecentAuthAttempts();
+  recent.push(Date.now());
+  localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify(recent));
+  return recent;
+}
+
+/* ---------------------------------------------------------
    20-COLOR PALETTE — light + dark. Users pick up to 3.
 --------------------------------------------------------- */
 const PALETTE = [
@@ -102,6 +138,15 @@ const AFFILIATE_IDS = {
   cj: null,           // e.g. "1234567" - covers Mountain Hardwear, etc.
 };
 
+/* Affiliate networks all check that a real person is reachable, and an
+   unreachable publisher is a standard rejection reason. The contact
+   block on the About page renders only while this is set. */
+const CONTACT_EMAIL = "cairnsbryson@gmail.com";
+
+/* Bump whenever the privacy or terms copy changes materially - the date
+   shown on the legal page has to reflect the text actually on screen. */
+const LEGAL_UPDATED = "17 August 2026";
+
 function buildShopLink(item, displayColorLabels) {
   const query = `${item.brand} ${item.name} ${displayColorLabels.join(" ")}`.trim();
 
@@ -181,7 +226,7 @@ const GEAR_PREVIEW = [
 ];
 
 const WHY_ITEMS = [
-  { title: "Brands people actually ride", desc: "Faction, Armada, Salomon, Völkl, Arc'teryx, The North Face, Ninety Roll, Beyond Medals.", icon: Sparkles },
+  { title: "Brands people actually ride", desc: "Faction, Armada, Salomon, Völkl, Arc'teryx, Yuki Threads, Ninety Roll, Beyond Medals.", icon: Sparkles },
   { title: "Your colors, your call", desc: "Pick up to three from twenty-five shades and every piece gets matched to them.", icon: Palette },
   { title: "Sized to you", desc: "Ski or board length and cut tuned to your gender, height, weight, and ability.", icon: Ruler },
 ];
@@ -193,7 +238,7 @@ function scrollToSection(id) {
 
 /* ---------------------------------------------------------
    CATALOG — established ski brands for hardgoods; outerwear
-   spans The North Face, Beyond Medals, Ninety Roll, Polar
+   spans Yuki Threads, Beyond Medals, Ninety Roll, Polar
    Pursuit, and GSOU SNOW. Goggles: Oakley,
    Salomon, Giro, Smith, Anon. Helmets: Giro, Smith, Scott.
 
@@ -212,279 +257,291 @@ function scrollToSection(id) {
 const SNOWBOARD_BOARDS = {
   board: [
     // unisex — explicitly marketed unisex per current-season reviews
-    { id: "bd1", name: "Howler", brand: "Jones", price: 650, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "bd2", name: "Mountain Twin", brand: "Jones", price: 600, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic", "street"], colors: ["white"], tier: "mid" },
-    { id: "bd3", name: "Dancehaul", brand: "Salomon", price: 550, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["freeride", "classic"], colors: ["charcoal", "black"], tier: "mid" },
-    { id: "bd4", name: "Huck Knife", brand: "Salomon", price: 500, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["black", "white"], tier: "mid" },
-    { id: "bd5", name: "Aeronaut", brand: "Capita", price: 630, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "bd6", name: "Dark Horse", brand: "Capita", price: 450, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["classic", "street"], colors: ["forest"], tier: "value" },
-    { id: "bd7", name: "Nokhu", brand: "Never Summer", price: 600, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["white"], tier: "mid" },
-    { id: "bd8", name: "dPr", brand: "Lib Tech", price: 450, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic"], colors: ["forest", "black"], tier: "value" },
-    { id: "bd9", name: "Orca", brand: "Lib Tech", price: 630, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["white"], tier: "premium" },
-    { id: "bd10", name: "Agent", brand: "Rome", price: 550, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "moguls"], style: ["classic", "freeride"], colors: ["black"], tier: "mid" },
-    { id: "bd11", name: "Banked Country", brand: "GNU", price: 600, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
+    { id: "bd1", name: "Howler", brand: "Jones", price: 700, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "orange"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0694/6291/7272/files/J.27.SNM.HOV-gallery-1.webp?v=1785146483" },
+    { id: "bd2", name: "Mountain Twin", brand: "Jones", price: 600, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic", "street"], colors: ["black", "teal"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0694/6291/7272/files/J.27.SNM.MTN-gallery-1_cdsmc7.webp?v=1782443870" },
+    { id: "bd3", name: "Dancehaul", brand: "Salomon", price: 550, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["freeride", "classic"], colors: ["red"], tier: "mid", image: "https://www.tactics.com/a/g7e3/1p/salomon-dancehaul-snowboard.jpg" },
+    { id: "bd4", name: "Huck Knife", brand: "Salomon", price: 500, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white", "black"], tier: "mid", image: "https://www.tactics.com/a/gbrz/1p/salomon-huck-knife-snowboard-black-text.jpg" },
+    { id: "bd5", name: "Aeronaut", brand: "Capita", price: 680, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride"], colors: ["cream", "cobalt"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0231/7366/0752/files/RST02-AERONAUT-153_9d82c9bf-dcb6-4134-b63e-b9fdf3649115.png?v=1776965275" },
+    { id: "bd6", name: "Dark Horse", brand: "Capita", price: 500, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["classic", "street"], colors: ["blush", "black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0231/7366/0752/files/FST04-DARK-HORSE-148.png?v=1776982308" },
+    { id: "bd7", name: "Nokhu", brand: "Never Summer", price: 600, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["cobalt", "black"], tier: "mid", image: "https://www.tactics.com/a/g7fo/1p/never-summer-nokhu-snowboard.jpg" },
+    { id: "bd8", name: "dPr", brand: "Lib Tech", price: 450, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic"], colors: ["black"], tier: "value", image: "https://www.lib-tech.com/media/catalog/product/cache/96295fe620a639af2486b8a098551518/2/0/2025-2026-Lib-Tech-dPr-Snowboard.jpg" },
+    { id: "bd9", name: "T.Rice Orca", brand: "Lib Tech", price: 630, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["teal", "black"], tier: "premium", image: "https://www.lib-tech.com/media/catalog/product/cache/96295fe620a639af2486b8a098551518/2/0/2025-2026-Lib-Tech-TRice-Orca-Snowboard.jpg" },
+    { id: "bd10", name: "Agent", brand: "Rome", price: 392, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "moguls"], style: ["classic", "freeride"], colors: ["yellow", "red"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0370/4055/4115/files/2526_Rome-Web_BD_Agent.jpg?v=1757347216" },
+    { id: "bd11", name: "Banked Country", brand: "GNU", price: 600, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["navy", "black"], tier: "premium", image: "https://www.gnu.com/media/catalog/product/cache/96295fe620a639af2486b8a098551518/2/0/2025-2026-GNU-Banked-Country-Snowboard.jpg" },
     // men's
-    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black"], tier: "premium", image: "https://www.burton.com/static/product/W26/106881A97DRG154_1.png?impolicy=bgwhite&imwidth=800" },
-    { id: "bdm2", name: "Custom Flying V", brand: "Burton", price: 550, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["white"], tier: "mid" },
-    { id: "bdm3", name: "Mercury", brand: "Capita", price: 680, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "bdm4", name: "DOA", brand: "Capita", price: 550, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white"], tier: "mid" },
-    { id: "bdm5", name: "Proto Type Two", brand: "Never Summer", price: 700, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["freeride", "race"], colors: ["black"], tier: "premium" },
-    { id: "bdm6", name: "Sky Pilot", brand: "K2", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "black"], tier: "premium" },
+    { id: "bdm1", name: "Custom Camber", brand: "Burton", price: 680, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["classic"], colors: ["black", "forest"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/106881997D_1.webp?v=1783620058" },
+    { id: "bdm2", name: "Custom Flying V", brand: "Burton", price: 680, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black", "forest"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/107071997D_1.webp?v=1778459935" },
+    { id: "bdm3", name: "Mercury", brand: "Capita", price: 700, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride"], colors: ["cream", "orange"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0231/7366/0752/files/FRD05-MERCURY-147.png?v=1777052987" },
+    { id: "bdm4", name: "DOA", brand: "Capita", price: 600, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["orange", "navy"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0231/7366/0752/files/RST03-DOA-148.png?v=1776965981" },
+    { id: "bdm6", name: "Sky Pilot", brand: "K2", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "black"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2/k2_2627_skypilot_KB261685?w=1200&qlt=90&fmt=auto" },
     // women's
-    { id: "bdw1", name: "Feelgood Flying V", brand: "Burton", price: 550, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["white"], tier: "mid" },
-    { id: "bdw2", name: "Blossom", brand: "Burton", price: 450, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["black", "white"], tier: "value" },
+    { id: "bdw1", name: "Feelgood Flying V", brand: "Burton", price: 650, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["white", "turquoise"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/1070919E1V_1.webp?v=1778423925" },
+    { id: "bdw2", name: "Blossom", brand: "Burton", price: 560, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["red", "black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/2294314EVA_1.webp?v=1776132835" },
   ],
 };
+
+/* Landing-page stats. These were hardcoded and had already drifted from
+   the catalog they describe, so they are derived instead - the numbers on
+   the page cannot disagree with what the quiz actually matches against. */
+function catalogStats() {
+  const groups = [...Object.values(CATALOG), ...Object.values(SNOWBOARD_BOARDS)];
+  const items = groups.flat();
+  return {
+    products: items.length,
+    brands: new Set(items.map((i) => i.brand)).size,
+    categories: Object.keys(CATALOG).length,
+  };
+}
+
 
 
 
 const CATALOG = {
   skis: [
     { id: "sm1", name: "Experience 86 Basalt (26/27)", brand: "Rossignol", price: 650, gender: ["m"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black", "forest"], tier: "value", image: "https://www.rossignol.com/dw/image/v2/BJJZ_PRD/on/demandware.static/-/Sites-rossignol-catalog/default/dwde0c9732/images/large/RAMFQ04_EXPERIENCE_86_BASALT_OPEN_72DPI_01.jpg?sw=800" },
-    { id: "sm2", name: "QST 98 (26/27)", brand: "Salomon", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["olive", "sand"], tier: "mid" },
-    { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["black"], tier: "premium" },
-    { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["olive", "black"], tier: "value" },
-    { id: "sm3", name: "ARV 94 (26/27)", brand: "Armada", price: 600, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black", "white"], tier: "value" },
-    { id: "sm4", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
-    { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "value" },
-    { id: "sm5", name: "Bent 100 (26/27)", brand: "Atomic", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["olive", "sand"], tier: "mid" },
-    { id: "sm6", name: "Blade Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["red", "charcoal"], tier: "premium" },
-    { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
-    { id: "sm8", name: "Mindbender 99Ti (26/27)", brand: "K2", price: 800, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "orange"], tier: "premium" },
-    { id: "sm10", name: "Antimatter 100 (26/27)", brand: "Armada", price: 820, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "white"], tier: "premium" },
-    { id: "sm11", name: "Bent Decode (26/27)", brand: "Atomic", price: 650, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sm14", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value" },
-    { id: "sm17", name: "ARV 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sm18", name: "ARV 106 Ti (26/27)", brand: "Armada", price: 560, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
-    { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange", "purple"], tier: "value" },
-    { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["teal", "lime"], tier: "mid" },
-    { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black", "white"], tier: "premium" },
-    { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["black", "forest"], tier: "mid" },
-    { id: "sm15", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["black"], tier: "premium" },
-    { id: "sm16", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
-    { id: "sw1", name: "Experience W 82 (26/27)", brand: "Rossignol", price: 600, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value" },
-    { id: "sw2", name: "Santa Ana 98 (26/27)", brand: "Nordica", price: 780, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "forest"], tier: "premium" },
-    { id: "sw3", name: "ARW 94 (26/27)", brand: "Armada", price: 600, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["purple", "lime"], tier: "value" },
-    { id: "sw4", name: "Dancer 2X (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["blush", "purple"], tier: "value" },
-    { id: "sw5", name: "Maven 93 C (26/27)", brand: "Atomic", price: 700, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["sky", "white"], tier: "mid" },
-    { id: "sw6", name: "Pandora 94 (26/27)", brand: "Line", price: 720, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["mint", "lime"], tier: "mid" },
-    { id: "sw7", name: "Sheeva 10 (26/27)", brand: "Blizzard", price: 800, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "moguls"], style: ["freeride"], colors: ["black", "forest"], tier: "premium" },
-    { id: "sw8", name: "Secret 96 (26/27)", brand: "Völkl", price: 875, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "premium" },
-    { id: "sw10", name: "Antimatter 88 (26/27)", brand: "Armada", price: 780, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "sw11", name: "Dancer 79 (26/27)", brand: "Faction", price: 720, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
-    { id: "sw12", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sw13", name: "Prodigy 2 (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value" },
-    { id: "sw14", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["black"], tier: "premium" },
-    { id: "sw15", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
-    { id: "sw16", name: "ARW 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "sw17", name: "ARW 100 (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["charcoal", "black"], tier: "value" },
-    { id: "sw18", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange", "purple"], tier: "value" },
-    { id: "sw19", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["teal", "lime"], tier: "mid" },
+    { id: "sm2", name: "QST 100 (26/27)", brand: "Salomon", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["sky", "black"], tier: "mid", image: "https://cdn.dam.salomon.com/e44113dc-9301-4bf9-af74-b2f301454ca1/L47421000+/PNG-2000px-max-72dpi.png" },
+    { id: "sm21", name: "Tom Wallisch Pro (26/27)", brand: "Line", price: 720, gender: ["m"], ability: ["advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white", "red"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_tom-wallisch-pro_LN261776?w=1200&qlt=90&fmt=auto" },
+    { id: "sm22", name: "Chronic 94 (26/27)", brand: "Line", price: 630, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["white", "orange"], tier: "value", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_chronic-94_LN261773?w=1200&qlt=90&fmt=auto" },
+    { id: "sm3", name: "ARV 94 (26/27)", brand: "Armada", price: 600, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black"], tier: "value", image: "/gear/sm3.jpg" },
+    { id: "sm4", name: "Prodigy 2 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["cream", "red"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Capsule-Topsheet-1x1.jpg?v=1750406708" },
+    { id: "sm23", name: "Prodigy 2 (26/27) — Black", brand: "Faction", price: 649, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black", "orange"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Topsheet-1x1.jpg?v=1750405561" },
+    { id: "sm5", name: "Bent 100 (26/27)", brand: "Atomic", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["black", "orange"], tier: "mid", image: "/gear/sm5.jpg" },
+    { id: "sm6", name: "Optic 96 (26/27)", brand: "Line", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "moguls"], style: ["freeride", "street"], colors: ["forest"], tier: "premium", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_optic-96_LN261759?w=1200&qlt=90&fmt=auto" },
+    { id: "sm7", name: "M7 Mantra (26/27)", brand: "Völkl", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["burgundy"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2skis/volkl_2627_m7-mantra_V2610112?w=1200&qlt=90&fmt=auto" },
+    { id: "sm10", name: "Antimatter 100 (26/27)", brand: "Armada", price: 820, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["charcoal", "sky"], tier: "premium", image: "/gear/sm10.jpg" },
+    { id: "sm11", name: "Bent Decode (26/27)", brand: "Atomic", price: 650, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["olive"], tier: "value", image: "/gear/sm11.jpg" },
+    { id: "sm14", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", image: "/gear/sm14.jpg" },
+    { id: "sm17", name: "ARV 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", image: "/gear/sm17.jpg" },
+    { id: "sm18", name: "ARV 106 Ti (26/27)", brand: "Armada", price: 560, gender: ["m"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["sand"], tier: "value", image: "/gear/sm18.jpg" },
+    { id: "sm19", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "magenta"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Topsheet-1x1.jpg?v=1750405167" },
+    { id: "sm24", name: "Prodigy 1 Capsule (26/27)", brand: "Faction", price: 649, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Capsule-Topsheet-1x1.jpg?v=1750406448" },
+    { id: "sm20", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["black", "purple"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-3-Topsheet-1x1.jpg?v=1750405805" },
+    { id: "sm12", name: "Dancer 79 (26/27)", brand: "Faction", price: 750, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
+    { id: "sm13", name: "Mindbender 90 (26/27)", brand: "K2", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["olive", "navy"], tier: "mid", image: "https://cdn.media.amplience.net/s/k2/k2_2627_mindbender-90_KS261793-KS261794?w=1200&qlt=90&fmt=auto" },
+    { id: "sm15", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["red"], tier: "premium", image: "/gear/sm15.jpg" },
+    { id: "sm16", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["red"], tier: "premium", image: "/gear/sm16.jpg" },
+    { id: "sm25", name: "RC4 Worldcup SL (26/27)", brand: "Fischer", price: 1150, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime", "black"], tier: "premium", image: "https://www.fischersports.com/media/1280x1706/ff/ae/a9/1783392732/a04026_rc4_noize_sl_01.png" },
+    { id: "sm26", name: "RC4 Worldcup GS (26/27)", brand: "Fischer", price: 1200, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime"], tier: "premium", image: "https://www.fischersports.com/media/1620x2160/79/46/db/1726236335/a02023_rc4_wc_gs_men_01.png" },
+    { id: "sm27", name: "The Curv GT (26/27)", brand: "Fischer", price: 780, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["navy"], tier: "mid", image: "https://www.fischersports.com/media/1620x2160/90/68/be/1776869205/p09326_the_curv_gt_80_01.png" },
+    { id: "sw1", name: "Experience W 82 (26/27)", brand: "Rossignol", price: 600, gender: ["w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["cream", "blush"], tier: "value", image: "https://www.rossignol.com/dw/image/v2/BJJZ_PRD/on/demandware.static/-/Sites-rossignol-catalog/default/dwca042f63/images/large/RAKFS01_EXPERIENCE_W_82_BASALT_XPRESS_rgb72dpi_00.jpg?sw=800" },
+    { id: "sw2", name: "Santa Ana 97 (26/27)", brand: "Nordica", price: 780, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["coral", "navy"], tier: "premium", image: "https://www.nordica.com/storage/Product/0A548600001_SANTA_ANA_97_FLAT.png" },
+    { id: "sw3", name: "ARW 94 (26/27)", brand: "Armada", price: 600, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["black", "cream"], tier: "value", image: "/gear/sw3.jpg" },
+    { id: "sw4", name: "Dancer 2X (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["lavender", "purple"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-2-Purple-Topsheet-1x1.jpg?v=1756474724" },
+    { id: "sw5", name: "Maven 93 C (26/27)", brand: "Atomic", price: 700, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["white", "slate"], tier: "mid", image: "/gear/sw5.jpg" },
+    { id: "sw6", name: "Pandora 92 (26/27)", brand: "Line", price: 720, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["black"], tier: "mid", image: "https://cdn.media.amplience.net/s/lineskis/line_2627_pandora-92_LN261765?w=1200&qlt=90&fmt=auto" },
+    { id: "sw7", name: "Sheeva 10 (26/27)", brand: "Blizzard", price: 800, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "moguls"], style: ["freeride"], colors: ["magenta", "purple"], tier: "premium", image: "https://www.blizzard-tecnica.com/storage/Product/8A536600-001_SHEEVA_10_flat_01.png" },
+    { id: "sw8", name: "M7 Mantra W (26/27)", brand: "Völkl", price: 875, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["mint", "magenta"], tier: "premium", image: "https://cdn.media.amplience.net/s/k2skis/volkl_2627_m7-mantra-w_V2610116?w=1200&qlt=90&fmt=auto" },
+    { id: "sw10", name: "Antimatter 88 (26/27)", brand: "Armada", price: 780, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["teal"], tier: "premium", image: "/gear/sw10.jpg" },
+    { id: "sw11", name: "Dancer 79 (26/27)", brand: "Faction", price: 720, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Dancer-79-White-Topsheet-1x1.jpg?v=1750775787" },
+    { id: "sw12", name: "Bent 90 (26/27)", brand: "Atomic", price: 620, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", image: "/gear/sm14.jpg" },
+    { id: "sw13", name: "Prodigy 2 Capsule (26/27)", brand: "Faction", price: 649, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["cream", "red"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-2-Capsule-Topsheet-1x1.jpg?v=1750406708" },
+    { id: "sw14", name: "Redster S9 (26/27)", brand: "Atomic", price: 950, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["red"], tier: "premium", image: "/gear/sm15.jpg" },
+    { id: "sw15", name: "Redster G9 (26/27)", brand: "Atomic", price: 900, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["red"], tier: "premium", image: "/gear/sm16.jpg" },
+    { id: "sw16", name: "ARW 88 - Black (26/27)", brand: "Armada", price: 420, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "purple"], tier: "value", image: "/gear/sw16.jpg" },
+    { id: "sw17", name: "ARW 100 (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["powder", "groomed"], style: ["freeride", "street"], colors: ["black", "coral"], tier: "value", image: "/gear/sw17.jpg" },
+    { id: "sw18", name: "Prodigy 1 (26/27)", brand: "Faction", price: 629, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "magenta"], tier: "value", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-1-Topsheet-1x1.jpg?v=1750405167" },
+    { id: "sw19", name: "Prodigy 3 (26/27)", brand: "Faction", price: 679, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["groomed", "powder"], style: ["freeride", "street"], colors: ["black", "purple"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/2258/9075/files/Faction-Skis-2526-Prodigy-3-Topsheet-1x1.jpg?v=1750405805" },
+    { id: "sw20", name: "RC4 Worldcup SL Women (26/27)", brand: "Fischer", price: 1100, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime", "black"], tier: "premium", image: "https://www.fischersports.com/media/1280x1706/7a/ce/d4/1783392734/a04626_rc4_noize_sl_01.png" },
+    { id: "sw21", name: "RC4 Worldcup GS Women (26/27)", brand: "Fischer", price: 1150, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime"], tier: "premium", image: "https://www.fischersports.com/media/1620x2160/1d/e9/30/1726236336/a03023_rc4_wc_gs_women_01.png" },
+    { id: "sw22", name: "The Curv GT (26/27)", brand: "Fischer", price: 750, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["navy"], tier: "mid", image: "https://www.fischersports.com/media/1620x2160/90/68/be/1776869205/p09326_the_curv_gt_80_01.png" },
   ],
   jacket: [
-    { id: "jm3", name: "Rider Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand", "olive"], tier: "value", fit: "baggy", shell: true },
-    { id: "jm4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 290, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["navy", "black"], tier: "mid", fit: "baggy", shell: true },
-    { id: "jm5", name: "Waterproof Snow Jacket", brand: "Polar Pursuit", price: 190, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "cream"], tier: "value", fit: "baggy", shell: true },
-    { id: "jm20", name: "Baggy Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true },
-    { id: "jm23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true },
-    { id: "jm24", name: "Rider Snow Jacket Purple", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy", shell: true },
-    { id: "jm21", name: "HIDA Ski Jacket", brand: "GSOU SNOW", price: 220, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false },
-    { id: "jm22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false },
-    { id: "jm7", name: "Ceptor Shell Jacket", brand: "The North Face", price: 475, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["white"], tier: "mid", fit: "regular", shell: true },
-    { id: "jm8", name: "Hex GORE-TEX Jacket", brand: "The North Face", price: 500, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm9", name: "Summit Verbier GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["m"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "freeride"], colors: ["white"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm12", name: "Summit Eastwall GORE-TEX Jacket", brand: "The North Face", price: 600, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "ice"], style: ["freeride", "race"], colors: ["forest", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm13", name: "Summit Tsirku GORE-TEX Pro Jacket", brand: "The North Face", price: 850, gender: ["m"], ability: ["expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["red", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm14", name: "Jazzi 3L GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black", "forest"], tier: "premium", fit: "regular", shell: true },
-    { id: "jm11", name: "Sabre Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw3", name: "Rider Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream", "blush"], tier: "value", fit: "baggy", shell: true },
-    { id: "jw4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 290, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["red", "black"], tier: "mid", fit: "baggy", shell: true },
-    { id: "jw5", name: "Waterproof Snow Jacket", brand: "Polar Pursuit", price: 190, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush", "black"], tier: "value", fit: "baggy", shell: true },
-    { id: "jw20", name: "Baggy Snowboard Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true },
-    { id: "jw23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true },
-    { id: "jw24", name: "Rider Snow Jacket Purple", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy", shell: true },
-    { id: "jw21", name: "HIDA Ski Jacket", brand: "GSOU SNOW", price: 220, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false },
-    { id: "jw22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false },
-    { id: "jw11", name: "Luminal 3L Jacket (26/27)", brand: "Armada", price: 550, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw7", name: "Superlu GORE-TEX Jacket", brand: "The North Face", price: 480, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "park"], style: ["street", "freeride"], colors: ["white"], tier: "premium", fit: "baggy", shell: true },
-    { id: "jw12", name: "Ceptor Shell Jacket", brand: "The North Face", price: 475, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "mid", fit: "regular", shell: true },
-    { id: "jw13", name: "Hex GORE-TEX Jacket", brand: "The North Face", price: 500, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw9", name: "Summit Eastwall GORE-TEX Jacket", brand: "The North Face", price: 600, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "ice"], style: ["freeride", "race"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw14", name: "Summit Verbier GORE-TEX Jacket", brand: "The North Face", price: 700, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "freeride"], colors: ["white"], tier: "premium", fit: "regular", shell: true },
-    { id: "jw10", name: "Sentinel Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true },
-    { id: "jtb1", name: "Mach 2 Shell", brand: "Trashbags", price: 205, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", shell: true },
-    { id: "jbr1", name: "Briqed Jacket", brand: "Briqed", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf1", name: "Charcoal Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf2", name: "Charcoal Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf3", name: "Slate Snow Jacket", brand: "Briqed", price: 110, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf4", name: "Slate Snow Jacket", brand: "Briqed", price: 110, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf5", name: "Navy Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf6", name: "Navy Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf7", name: "Olive Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf8", name: "Olive Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf9", name: "Burgundy Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf10", name: "Burgundy Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf11", name: "Sand Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf12", name: "Sand Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf13", name: "Sky Blue Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf14", name: "Sky Blue Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf15", name: "Pink Snow Jacket", brand: "Briqed", price: 110, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf16", name: "Pink Snow Jacket", brand: "Briqed", price: 110, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf17", name: "Mint Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["mint"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf18", name: "Mint Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["mint"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf19", name: "Cobalt Snow Jacket", brand: "Briqed", price: 110, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cobalt"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf20", name: "Cobalt Snow Jacket", brand: "Briqed", price: 110, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cobalt"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf21", name: "Teal Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["teal"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf22", name: "Teal Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["teal"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf23", name: "Lime Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lime"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf24", name: "Lime Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lime"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf25", name: "Yellow Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["yellow"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf26", name: "Yellow Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["yellow"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf27", name: "Orange Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf28", name: "Orange Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf29", name: "Cream Snow Jacket", brand: "Briqed", price: 110, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf30", name: "Cream Snow Jacket", brand: "Briqed", price: 110, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf31", name: "Silver Snow Jacket", brand: "Briqed", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf32", name: "Silver Snow Jacket", brand: "Briqed", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf33", name: "Magenta Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf34", name: "Magenta Snow Jacket", brand: "Bandits Apparels", price: 146, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf35", name: "Turquoise Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["turquoise"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf36", name: "Turquoise Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["turquoise"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf37", name: "Coral Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["coral"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf38", name: "Coral Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["coral"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf39", name: "Lavender Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", shell: true },
-    { id: "jf210", name: "Lavender Snow Jacket", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", shell: true },
+    { id: "jm3", name: "Twin Line 30K Snow Jacket — Olive Beige", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive", "sand"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0168-819x1024.jpg" },
+    { id: "jm4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 290, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, image: "https://beyondmedals.centracdn.net/client/dynamic/images/593_bd93c29c21-bmaw25-flat-fullzip-jacket-black-web.jpg" },
+    { id: "jm20", name: "Baggy Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_M_01.jpg?width=800" },
+    { id: "jm23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_M_01.jpg?width=800" },
+    { id: "jm24", name: "Twin Line 30K Snow Jacket — Frost Purple", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/12/B05A0130-819x1024.jpg" },
+    { id: "jm21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_M_01.jpg?width=800" },
+    { id: "jm22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2689-ARG_M_01.jpg?width=800" },
+    { id: "jm11", name: "Sabre Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true, image: "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000009913-Sabre-Insulated-Jacket-Black-Front-View.jpg" },
+    { id: "jw3", name: "Twin Line 30K Snow Jacket — Stone White", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/07/B05A0088-819x1024.jpg" },
+    { id: "jw4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 290, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, image: "https://beyondmedals.centracdn.net/client/dynamic/images/593_bd93c29c21-bmaw25-flat-fullzip-jacket-black-web.jpg" },
+    { id: "jw20", name: "Baggy Snowboard Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_F_01.jpg?width=800" },
+    { id: "jw23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_F_01.jpg?width=800" },
+    { id: "jw24", name: "Twin Line 30K Snow Jacket — Pink Black", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["blush", "black"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/07/1-819x1024.jpg" },
+    { id: "jw21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_F_01.jpg?width=800" },
+    { id: "jw22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 190, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2608-ARG_F_01.jpg?width=800" },
+    { id: "jw11", name: "Reserve 3L Jacket", brand: "Burton", price: 370, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["sky"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/3065210ASH_4.webp?width=800" },
+    { id: "jw10", name: "Sentinel Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true, image: "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000010538-Sentinel-Insulated-Jacket-Black-Women-s-Front-View.jpg" },
+    { id: "jtb1", name: "Mach 2 Shell", brand: "Trashbags", price: 205, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3400.png?v=1743442493" },
+    { id: "jbr1", name: "Briqed Jacket", brand: "Briqed", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/1brqied_-_Edited.png?width=800" },
+    { id: "jf1", name: "Dark Grey & Black Monochrome Colorblock Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2688-BLK_GRY_M_01.jpg?width=800" },
+    { id: "jf2", name: "Dark Grey & Black Monochrome Colorblock Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2688-BLK_GRY_F_01.jpg?width=800" },
+    { id: "jf3", name: "Light Gray Reflective Side-Piping Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2692-GREY_M_01.jpg?width=800" },
+    { id: "jf4", name: "Light Gray Retro Track Stripe Reflective Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-WJK2720-GREY_F_01.jpg?width=800" },
+    { id: "jf5", name: "Navy Retro Track Chevron Stripe Snow Jacket", brand: "GSOU SNOW", price: 154, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2619-191_M_01.jpg?width=800" },
+    { id: "jf6", name: "Navy Retro Track Chevron Stripe Snow Jacket", brand: "GSOU SNOW", price: 154, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2619-191_F_K_1.jpg?width=800" },
+    { id: "jf7", name: "Color-Block Dark Olive & Black Corduroy Snow Jacket", brand: "GSOU SNOW", price: 156, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2658-582_M_01.jpg?width=800" },
+    { id: "jf8", name: "Color-Block Dark Olive & Black Corduroy Snow Jacket", brand: "GSOU SNOW", price: 156, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2658-582_F_01.jpg?width=800" },
+    { id: "jf11", name: "Twin Line 30K Snow Jacket — Brown Beige", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/01/Image_20260102155217_1625_73.jpg" },
+    { id: "jf12", name: "Twin Line 30K Snow Jacket — Grey Black", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate", "black"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0130-819x1024.jpg" },
+    { id: "jf13", name: "Sky Blue Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/FullSizeRender_dcbac7db-af64-4d11-9842-3f1c030c230b.jpg?width=800" },
+    { id: "jf14", name: "Sky Blue Snow Jacket", brand: "Solo Apparel", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/FullSizeRender_dcbac7db-af64-4d11-9842-3f1c030c230b.jpg?width=800" },
+    { id: "jf15", name: "Pink Alpine Shield 3L Utility Insulated Ski Jacket", brand: "GSOU SNOW", price: 259, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2726-PNK_M_01.jpg?width=800" },
+    { id: "jf16", name: "Pink Recycled Minimalist Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-WJK2690-PNK_F_K_1.jpg?width=800" },
+    { id: "jf27", name: "Twin Line 30K Snow Jacket — Red Grey", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["red", "slate"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/12/B05A0168-819x1024.jpg" },
+    { id: "jf28", name: "Twin Line 30K Snow Jacket — Arctic Blue", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/07/B05A8051-819x1024.jpg" },
+    { id: "jf29", name: "Oat Milk Eco Utility Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2699-BCE_M_01.jpg?width=800" },
+    { id: "jf30", name: "Oat Milk Eco Utility Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2699-BCE_F_01.jpg?width=800" },
+    { id: "jf31", name: "Light Gray Alpine Shield 3L Essential Insulated Ski Jacket", brand: "GSOU SNOW", price: 259, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2728-GREY_M_01.jpg?width=800" },
+    { id: "jf32", name: "Light Gray Side-Panel Reflective Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2718-GREY_F_01.jpg?width=800" },
+    { id: "jf39", name: "Twin Line 30K Snow Jacket — White Blue", brand: "Ninety Roll", price: 180, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white", "cobalt"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0088-819x1024.jpg" },
+    { id: "jf210", name: "Twin Line 30K Snow Jacket — Black Green", brand: "Ninety Roll", price: 180, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "forest"], tier: "value", fit: "baggy", shell: true, image: "https://ninetyroll.co/wp-content/uploads/2026/01/B05A0168-1-819x1024.jpg" },
+    { id: "jn1", name: "Mobbin Jacket — Merlot", brand: "Yuki Threads", price: 400, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["park","groomed"], style: ["street","freeride"], colors: ["burgundy"], tier: "premium", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0388/9917/files/W26MJMRL_3210.jpg?v=1778553214" },
+    { id: "jn2", name: "SP Overhead Anorak — Mint", brand: "OOSC", price: 200, gender: ["m", "w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["mint"], tier: "mid", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0659/5228/4895/files/oosc-sp-overhead-mint-734825.jpg?v=1775634509" },
+    { id: "jn3", name: "Dune Snowboard Jacket — Cobalt", brand: "Montec", price: 125, gender: ["m"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed","powder"], style: ["street","freeride"], colors: ["cobalt"], tier: "value", fit: "baggy", shell: false, image: "https://www.montecwear.com/images/H2047_01_JNJDFuD.jpg" },
+    { id: "jn4", name: "Genki Jacket — Deep Teal", brand: "Yuki Threads", price: 430, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["park","groomed"], style: ["street","freeride"], colors: ["teal"], tier: "premium", fit: "baggy", shell: true, image: "https://cdn.shopify.com/s/files/1/0388/9917/files/G25GJDTL_1033.jpg?v=1763772758" },
+    { id: "jn5", name: "GORE-TEX Fragment Shell Anorak — Dusty Lime", brand: "686", price: 210, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry","groomed"], style: ["freeride","classic"], colors: ["lime"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN163_DUSTY-LIME_1.jpg?v=1757353864" },
+    { id: "jn6", name: "Sublime Shell Anorak — Yellow Tie Dye", brand: "686", price: 180, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["yellow"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN338_SUBLIME-YELLOW-TIE-DYE_1.jpg?v=1757353776" },
+    { id: "jn7", name: "Hydra Thermagraph Jacket — Yellow Gold", brand: "686", price: 300, gender: ["m"], ability: ["intermediate","advanced"], terrain: ["groomed","powder"], style: ["freeride","classic"], colors: ["yellow"], tier: "mid", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN149_YELLOW-GOLD_2.jpg?v=1757353694" },
+    { id: "jn8", name: "Hot Pink Two-Tone Insulated Snow Jacket", brand: "GSOU SNOW", price: 156, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy", shell: false, image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-WJK2632-ROS_F_01.jpg?v=1777441493" },
+    { id: "jn9", name: "Cypress Jacket — Nai Aqua", brand: "Airblaster", price: 182, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["turquoise"], tier: "value", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0236/7291/files/CYPRESS_JACKET_NAI_AQUA_2526.jpg?v=1759961239" },
+    { id: "jn10", name: "Yeh Man Jacket — Aqua", brand: "OOSC", price: 300, gender: ["m"], ability: ["intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["turquoise"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0659/5228/4895/files/yeh-man-jacket-aqua-7592939.jpg?v=1775657233" },
+    { id: "jt1", name: "Domino GORE-TEX 3L Jacket", brand: "Flylow", price: 650, gender: ["w"], ability: ["advanced","expert"], terrain: ["backcountry", "powder"], style: ["classic", "freeride"], colors: ["lavender"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1001/9644/files/F25_Domino-Gore-Tex-3L-Jacket_Aurora_A.jpg?v=1756961974" },
+    { id: "jt2", name: "Kane Jacket", brand: "Flylow", price: 336, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry", "powder"], style: ["race", "classic"], colors: ["red", "burgundy"], tier: "premium", fit: "slim", shell: true, image: "https://cdn.shopify.com/s/files/1/1001/9644/files/F25_Kane-Jacket_Amaro-Magma_A.jpg?v=1756962565" },
+    { id: "jt3", name: "Quantum Pro Jacket", brand: "Flylow", price: 308, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry", "powder"], style: ["classic", "freeride"], colors: ["olive", "black"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1001/9644/files/F25_Quantum-Pro-Jacket_Black-Rye_A.jpg?v=1757166049" },
+    { id: "jt4", name: "Stella Jacket PRIMO", brand: "Trew Gear", price: 279, gender: ["w"], ability: ["intermediate","advanced","expert"], terrain: ["powder", "backcountry"], style: ["classic", "freeride"], colors: ["navy", "lavender"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1909/3137/files/251023_W26_TREW_PRIMO_W_STELLA_JKT_EXPEDITION_INDIGO_0544_7ff823d3-92ff-43ff-aa0a-8a379a17f30c.jpg?v=1761761099" },
+    { id: "jt5", name: "Cosmic Jacket PRIMO", brand: "Trew Gear", price: 279, gender: ["m"], ability: ["intermediate","advanced","expert"], terrain: ["powder", "groomed"], style: ["retro", "classic"], colors: ["yellow"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1909/3137/files/251023_W26_TREW_PRIMO_M_COSMIC_JKT_MTN_MAIZE_3553.jpg?v=1761761752" },
+    { id: "jt6", name: "Capow Jacket", brand: "Trew Gear", price: 259, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["backcountry", "powder"], style: ["retro", "freeride"], colors: ["yellow", "navy"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1909/3137/files/240102_W24_TREW_W_CAPOW_JKT_WILLOW_BLK_1601.jpg?v=1746460174" },
+    { id: "jt7", name: "Recon Stretch Shell", brand: "Black Diamond", price: 499, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry", "ice"], style: ["classic", "freeride"], colors: ["slate"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0880/2195/8973/files/745046_4034_M_Recon_Stretch_Shell_Midnight_Blue_03.jpg?v=1785190010" },
+    { id: "jt8", name: "Mission Alpine Shell", brand: "Black Diamond", price: 749, gender: ["w"], ability: ["advanced","expert"], terrain: ["backcountry", "ice"], style: ["classic", "race"], colors: ["forest", "charcoal"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0880/2195/8973/files/745056_9777_W_Mission_Alpine_Shell_Black-Laurel_Green_03.jpg?v=1785270689" },
+    { id: "jt9", name: "Mission Alpine Shell", brand: "Black Diamond", price: 749, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry", "ice"], style: ["classic", "race"], colors: ["black", "charcoal"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0880/2195/8973/files/745055_0002_M_Mission_Alpine_Shell_Black_03.jpg?v=1781732403" },
+    { id: "jt10", name: "Reserve GORE-TEX 2L Jacket", brand: "Burton", price: 420, gender: ["w"], ability: ["advanced","expert"], terrain: ["groomed", "powder"], style: ["classic"], colors: ["black"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/3024210A04_4.webp?v=1785176473" },
+    { id: "jt11", name: "Reserve 2.5L Jacket", brand: "Burton", price: 210, gender: ["m"], ability: ["intermediate","advanced","expert"], terrain: ["groomed", "powder"], style: ["classic", "race"], colors: ["teal"], tier: "mid", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/3098210E9K_4.webp?v=1779759546" },
+    { id: "jt12", name: "Reserve 2L Insulated Jacket", brand: "Burton", price: 290, gender: ["m"], ability: ["intermediate","advanced","expert"], terrain: ["groomed", "powder"], style: ["classic", "retro"], colors: ["sand"], tier: "mid", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/3025310AH2_4.webp?v=1785176433" },
+    { id: "jt13", name: "Objective Pro Jacket", brand: "Stio", price: 799, gender: ["m"], ability: ["advanced","expert"], terrain: ["backcountry", "ice"], style: ["race", "classic"], colors: ["forest"], tier: "premium", fit: "slim", shell: true, image: "https://cdn.shopify.com/s/files/1/0023/9901/0881/files/200785-301_6347e150-a214-42d2-ab11-b46137057a69.jpg?v=1759432104" },
+    { id: "jt14", name: "Fernos Insulated Hooded Jacket", brand: "Stio", price: 299, gender: ["w"], ability: ["intermediate","advanced","expert"], terrain: ["backcountry", "groomed"], style: ["classic", "retro"], colors: ["lime"], tier: "mid", fit: "slim", shell: false, image: "https://cdn.shopify.com/s/files/1/0023/9901/0881/files/100330-310_2c610c07-0b7b-4596-ad75-ad7b5e14e7ca.jpg?v=1786652017" },
+    { id: "jp1", name: "Kiroro NetPlus 2L Jacket", brand: "Oyuki", price: 400, gender: ["w"], ability: ["intermediate","advanced","expert"], terrain: ["powder", "backcountry"], style: ["freeride", "street"], colors: ["sky", "sand"], tier: "premium", fit: "baggy", shell: true, image: "https://oyuki.com/wp-content/uploads/2025/09/Kiroro-NetPlus%C2%AE-2L-Jacket_0000s_0009_EB-261437-1013_Oyuki_Winter-2026_Kiroro-Netplus-2L-Jacket_Womens_Glacier-Tottori_PS.png" },
+    { id: "jp2", name: "Moiwa NetPlus 2L Jacket", brand: "Oyuki", price: 400, gender: ["m"], ability: ["intermediate","advanced","expert"], terrain: ["powder", "backcountry"], style: ["freeride", "street"], colors: ["forest", "black"], tier: "premium", fit: "baggy", shell: true, image: "https://oyuki.com/wp-content/uploads/2025/09/Moiwa-NetPlus%C2%AE-2L-Jacket_0029_EB-261433-1008_Oyuki_Winter-2026_Moiwa-Netplus-2L-Jacket_Mens_Deep-Forest-Bamboo-Black_PS-.png" },
+    { id: "jp3", name: "Toya Down NetPlus Insulator Jacket", brand: "Oyuki", price: 290, gender: ["m", "w"], ability: ["beginner","intermediate","advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["sand", "black"], tier: "mid", fit: "regular", shell: false, image: "https://oyuki.com/wp-content/uploads/2025/09/INSULATORS_MIDLAYERS_0059_EB-261471-1008_Oyuki_Winter-2026_Toya-Down-Netplus-Insulator-Jacket_Unisex_Tottori-Black_PS-20.png" },
+    { id: "jp4", name: "Burnout Anorak", brand: "686", price: 90, gender: ["m"], ability: ["beginner","intermediate","advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "forest"], tier: "value", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/EEZU260700_BLACK_1_2db6d034-89ca-4f7b-aac8-cf952bb306f2.jpg?v=1784244056" },
+    { id: "jp5", name: "GORE-TEX Willow Insulated Jacket", brand: "686", price: 380, gender: ["w"], ability: ["intermediate","advanced","expert"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black", "sand"], tier: "premium", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN335_BLACK_1.jpg?v=1757353781" },
+    { id: "jp6", name: "Outpost Sherpa Jacket", brand: "686", price: 160, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black", "white"], tier: "value", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M4WNFLC306_BLACK-VAPORS_1_8f0aef74-5d5b-4403-821f-7877a53ed038.jpg?v=1757353954" },
+    { id: "jp7", name: "Street Jacket", brand: "Yuki Threads", price: 440, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "premium", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/0388/9917/files/W26SJBLK_1657_1833621a-9182-42f5-a2a2-2c328b2723d3.jpg?v=1778559745" },
+    { id: "jp8", name: "Slack Country Jacket", brand: "Yuki Threads", price: 600, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["olive", "lime"], tier: "premium", fit: "regular", shell: true, image: "https://cdn.shopify.com/s/files/1/0388/9917/files/G25SCJRFG_1418.jpg?v=1764043628" },
+    { id: "jp9", name: "Brush Quilted Jacket — Moss", brand: "Bloom Outerwear", price: 275, gender: ["m"], ability: ["beginner","intermediate","advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive", "sand"], tier: "mid", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/0286/4014/files/insulated-mens-green-ski-jacket.jpg?v=1763696414" },
+    { id: "jp10", name: "Brush Quilted Jacket — Tan", brand: "Bloom Outerwear", price: 275, gender: ["m"], ability: ["beginner","intermediate","advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "mid", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/0286/4014/files/cool-quilted-ski-jacket-tan.webp?v=1763702841" },
+    { id: "jp11", name: "Brush Quilted Jacket — Charcoal", brand: "Bloom Outerwear", price: 275, gender: ["m"], ability: ["beginner","intermediate","advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "mid", fit: "regular", shell: false, image: "https://cdn.shopify.com/s/files/1/0286/4014/files/quilted-ski-jacket-gray.jpg?v=1766465565" },
   ],
   pants: [
-    { id: "pm3", name: "Pinnacle 15K Wide Cut Pants", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy" },
-    { id: "pm4", name: "Downtown Pro 30K Snow Pants", brand: "Ninety Roll", price: 200, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy" },
-    { id: "pm5", name: "Frostline Baggy Snow Pants", brand: "Polar Pursuit", price: 192, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy" },
-    { id: "pm6", name: "Baggy Wear-Resistant Snow Pants", brand: "GSOU SNOW", price: 130, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "value", fit: "baggy" },
-    { id: "pm22", name: "Army Green Insulated Baggy Snow Pants", brand: "GSOU SNOW", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest", "black"], tier: "value", fit: "baggy" },
-    { id: "pm7", name: "Nostalgia Pants 2L", brand: "Beyond Medals", price: 260, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["forest", "black"], tier: "mid", fit: "baggy" },
-    { id: "pm10", name: "Sabre Pant (26/27)", brand: "Arc'teryx", price: 600, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["white"], tier: "premium", fit: "regular" },
-    { id: "pw3", name: "Pinnacle 15K Wide Cut Pants", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy" },
-    { id: "pw4", name: "Downtown Pro 30K Snow Pants", brand: "Ninety Roll", price: 200, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy" },
-    { id: "pw5", name: "Frostline Baggy Snow Pants", brand: "Polar Pursuit", price: 192, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy" },
-    { id: "pw6", name: "Insulated Baggy Snow Pants", brand: "GSOU SNOW", price: 160, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy" },
-    { id: "pw22", name: "Army Green Baggy Snow Pants", brand: "GSOU SNOW", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["forest", "black"], tier: "value", fit: "baggy" },
-    { id: "pw7", name: "Nostalgia Pants 2L", brand: "Beyond Medals", price: 260, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["forest", "black"], tier: "mid", fit: "baggy" },
-    { id: "pw10", name: "Sentinel Pant (26/27)", brand: "Arc'teryx", price: 600, gender: ["w"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["white"], tier: "premium", fit: "regular" },
-    { id: "ptb1", name: "Trashbags Snow Pants — Black", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy" },
-    { id: "ptb2", name: "Trashbags Snow Pants — Light Purple", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "mid", fit: "baggy" },
-    { id: "ptb3", name: "Trashbags Snow Pants — Olive Green", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "mid", fit: "baggy" },
-    { id: "ptb4", name: "Trashbags Snow Pants — Maroon", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "mid", fit: "baggy" },
-    { id: "pbv1", name: "Black No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy" },
-    { id: "pbv2", name: "Navy No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy" },
-    { id: "pbv3", name: "Brown No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy" },
-    { id: "pbv4", name: "Olive No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy" },
-    { id: "pbv5", name: "Slate Gray No Cargo Baggy Pants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy" },
-    { id: "pb1", name: "Black Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy" },
-    { id: "pb2", name: "White Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy" },
-    { id: "pb3", name: "Olive Green Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy" },
-    { id: "pb4", name: "Purple Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy" },
-    { id: "pb5", name: "Black/Red Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "red"], tier: "value", fit: "baggy" },
-    { id: "pb6", name: "Black/Blue Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "navy"], tier: "value", fit: "baggy" },
-    { id: "pb7", name: "Dark Brown Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy" },
-    { id: "pb8", name: "Grey Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy" },
-    { id: "pb9", name: "Red Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["red"], tier: "value", fit: "baggy" },
-    { id: "pb10", name: "Light Pink Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy" },
-    { id: "pb11", name: "Navy Blue Snowpants 10k", brand: "Bandits Apparels", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy" },
-    { id: "pb12", name: "Beige Snowpants 10k", brand: "Bandits Apparels", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy" },
-    { id: "pbr1", name: "Cargo Snowpants Black", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy" },
-    { id: "pbr2", name: "Cargo Snowpants Blue", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cobalt"], tier: "value", fit: "baggy" },
-    { id: "pbr3", name: "Cargo Snowpants White", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy" },
-    { id: "pbr4", name: "Cargo Snowpants Purple", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy" },
-    { id: "pbr5", name: "Cargo Snowpants Pink", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy" },
-    { id: "pbr6", name: "Cargo Snowpants Brown", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy" },
-    { id: "pbr7", name: "Cargo Snowpants Grey", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy" },
-    { id: "pso1", name: "Black Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy" },
-    { id: "pso2", name: "Twilight Snow Pants", brand: "Solo Apparel", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "navy"], tier: "value", fit: "baggy" },
-    { id: "pso3", name: "White Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy" },
-    { id: "pso4", name: "Purple Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy" },
-    { id: "pso5", name: "Light Blue Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy" },
-    { id: "pso6", name: "Pink Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy" },
-    { id: "pso7", name: "Brown Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy" },
-    { id: "pso8", name: "Grey Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy" },
-    { id: "pso9", name: "Green Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["forest"], tier: "value", fit: "baggy" },
-    { id: "pf1", name: "Charcoal Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy" },
-    { id: "pf2", name: "Charcoal Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy" },
-    { id: "pf3", name: "Cream Snow Pants", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy" },
-    { id: "pf4", name: "Cream Snow Pants", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy" },
-    { id: "pf5", name: "Mint Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["mint"], tier: "value", fit: "baggy" },
-    { id: "pf6", name: "Mint Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["mint"], tier: "value", fit: "baggy" },
-    { id: "pf7", name: "Teal Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["teal"], tier: "value", fit: "baggy" },
-    { id: "pf8", name: "Teal Snow Pants", brand: "Solo Apparel", price: 125, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["teal"], tier: "value", fit: "baggy" },
-    { id: "pf9", name: "Lime Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lime"], tier: "value", fit: "baggy" },
-    { id: "pf10", name: "Lime Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lime"], tier: "value", fit: "baggy" },
-    { id: "pf11", name: "Yellow Snow Pants", brand: "Bandits Apparels", price: 146, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["yellow"], tier: "value", fit: "baggy" },
-    { id: "pf12", name: "Yellow Snow Pants", brand: "Bandits Apparels", price: 146, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["yellow"], tier: "value", fit: "baggy" },
-    { id: "pf13", name: "Orange Snow Pants", brand: "Briqed", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange"], tier: "value", fit: "baggy" },
-    { id: "pf14", name: "Orange Snow Pants", brand: "Briqed", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["orange"], tier: "value", fit: "baggy" },
-    { id: "pf15", name: "Olive Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy" },
-    { id: "pf16", name: "Olive Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy" },
-    { id: "pf17", name: "Sand Snow Pants", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy" },
-    { id: "pf18", name: "Sand Snow Pants", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy" },
-    { id: "pf19", name: "Sky Blue Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy" },
-    { id: "pf20", name: "Sky Blue Snow Pants", brand: "Solo Apparel", price: 125, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy" },
-    { id: "pf21", name: "Silver Snow Pants", brand: "Briqed", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy" },
-    { id: "pf22", name: "Silver Snow Pants", brand: "Briqed", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy" },
-    { id: "pf23", name: "Magenta Snow Pants", brand: "Bandits Apparels", price: 146, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy" },
-    { id: "pf24", name: "Magenta Snow Pants", brand: "Bandits Apparels", price: 146, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy" },
-    { id: "pf25", name: "Turquoise Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["turquoise"], tier: "value", fit: "baggy" },
-    { id: "pf26", name: "Turquoise Snow Pants", brand: "GSOU SNOW", price: 140, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["turquoise"], tier: "value", fit: "baggy" },
-    { id: "pf27", name: "Coral Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["coral"], tier: "value", fit: "baggy" },
-    { id: "pf28", name: "Coral Snow Pants", brand: "Solo Apparel", price: 125, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["coral"], tier: "value", fit: "baggy" },
-    { id: "pf29", name: "Lavender Snow Pants", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy" },
-    { id: "pf210", name: "Lavender Snow Pants", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy" },
+    { id: "pm3", name: "Downtown Pro 30K Snow Pants — Cobalt Blue", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cobalt"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2024/05/4W2A2753-819x1024.jpg" },
+    { id: "pm4", name: "Downtown Pro 30K Snow Pants — Stone White", brand: "Ninety Roll", price: 200, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["cream"], tier: "mid", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2024/05/4W2A2783-3-819x1024.jpg" },
+    { id: "pm5", name: "Frostline Baggy Snow Pants", brand: "Polar Pursuit", price: 192, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0588/4084/2339/files/DSC04835-Edit_2_109a5ef1-ba57-4bcb-8f3c-3fb1ad820ddd.jpg?v=1769814690" },
+    { id: "pm6", name: "Baggy Wear-Resistant Snow Pants", brand: "GSOU SNOW", price: 130, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2511-ARG_M_01.jpg?width=800" },
+    { id: "pm22", name: "Army Green Insulated Baggy Snow Pants", brand: "GSOU SNOW", price: 150, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest", "black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2684-ARG_M_01.jpg?width=800" },
+    { id: "pm7", name: "Nostalgia Pants 2L", brand: "Beyond Medals", price: 260, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["forest", "black"], tier: "mid", fit: "baggy", image: "https://beyondmedals.centracdn.net/client/dynamic/images/586_6106875a1a-bmaw25-flat-nostalgia-pants-green-web.jpg" },
+    { id: "pw3", name: "Pinnacle Cargo 30K Snow Pants — Arctic Blue", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2025/03/%E8%93%9D-2-819x1024.jpg" },
+    { id: "pw4", name: "Downtown Embroidery 30K Snow Pants — True White", brand: "Ninety Roll", price: 200, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2026/01/WX7_6303-819x1024.jpg" },
+    { id: "pw5", name: "Frostline Baggy Snow Pants", brand: "Polar Pursuit", price: 192, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0588/4084/2339/files/DSC05162_8ca5739e-44e2-42b0-b452-c78a0889dc7a.jpg?v=1769802781" },
+    { id: "pw6", name: "Insulated Baggy Snow Pants", brand: "GSOU SNOW", price: 160, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["forest"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2511-ARG_F_01.jpg?width=800" },
+    { id: "pw22", name: "Army Green Baggy Snow Pants", brand: "GSOU SNOW", price: 150, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "moguls"], style: ["street"], colors: ["forest", "black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2648-DGRN_F_01.jpg?width=800" },
+    { id: "pw7", name: "Nostalgia Pants 2L", brand: "Beyond Medals", price: 260, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["forest", "black"], tier: "mid", fit: "baggy", image: "https://beyondmedals.centracdn.net/client/dynamic/images/586_6106875a1a-bmaw25-flat-nostalgia-pants-green-web.jpg" },
+    { id: "ptb1", name: "Trashbags Snow Pants — Black", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3813_8825c081-f633-4664-ac9b-9bdbf72c3dc7.jpg?v=1770838985" },
+    { id: "ptb2", name: "Trashbags Snow Pants — Light Purple", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3790_624d6d68-977f-4902-942f-c586625d38ae.jpg?v=1770838985" },
+    { id: "ptb3", name: "Trashbags Snow Pants — Olive Green", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3679_10800abe-23f9-44aa-83f5-b278801e16a3.jpg?v=1770838985" },
+    { id: "ptb4", name: "Trashbags Snow Pants — Maroon", brand: "Trashbags", price: 195, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0561/9282/7494/files/IMG_3664_2eb04747-aa5a-4885-8055-c5066c9cc2ad.jpg?v=1770838985" },
+    { id: "pbv1", name: "Black No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/6518A418-70F2-49EE-8E03-6626C8301B2B.jpg?v=1759104130" },
+    { id: "pbv2", name: "Navy No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/A67D4DFE-4BF0-46AB-87D4-23AC9263F4B4.jpg?v=1759104190" },
+    { id: "pbv3", name: "Brown No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/F154E4ED-0758-4F07-9277-D38043C7E57C.jpg?v=1759104284" },
+    { id: "pbv4", name: "Olive No Cargo Baggy Snowpants", brand: "Big Vigs Apparel", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/26EF2A99-7BBA-4B46-881F-35D5168DDB7F.jpg?v=1759103910" },
+    { id: "pbv5", name: "Slate Gray No Cargo Baggy Pants", brand: "Big Vigs Apparel", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/5DD734E0-3124-4CAC-B826-146D53877D08.jpg?v=1759104381" },
+    { id: "pb1", name: "Black Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00486.jpg?width=800" },
+    { id: "pb2", name: "White Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00497.jpg?width=800" },
+    { id: "pb3", name: "Olive Green Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00183.jpg?width=800" },
+    { id: "pb4", name: "Purple Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00159.jpg?width=800" },
+    { id: "pb5", name: "Black/Red Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "red"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00647.jpg?width=800" },
+    { id: "pb6", name: "Black/Blue Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "navy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00650.jpg?width=800" },
+    { id: "pb7", name: "Dark Brown Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00489_45458c47-85b6-4a41-afa4-e403e8d26b37.jpg?width=800" },
+    { id: "pb8", name: "Grey Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00674.jpg?width=800" },
+    { id: "pb9", name: "Red Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["red"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00493.jpg?width=800" },
+    { id: "pb10", name: "Light Pink Snowpants 20k", brand: "Bandits Apparels", price: 146, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00496.jpg?width=800" },
+    { id: "pb11", name: "Navy Blue Snowpants 10k", brand: "Bandits Apparels", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["navy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00679.jpg?width=800" },
+    { id: "pb12", name: "Beige Snowpants 10k", brand: "Bandits Apparels", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/C97F2B34-63E4-4CE6-8B32-E47A922C74B1.jpg?width=800" },
+    { id: "pbr1", name: "Cargo Snowpants Black", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/BDCE6D6C-FC6F-4D16-A724-3F5148638220.png?width=800" },
+    { id: "pbr2", name: "Cargo Snowpants Blue", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cobalt"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/C32A1099-DFEF-42F1-80CA-407E123CABC4.png?width=800" },
+    { id: "pbr3", name: "Cargo Snowpants White", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/31590169-29FF-40AE-B951-2923294BD021.png?width=800" },
+    { id: "pbr4", name: "Cargo Snowpants Purple", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/IMG-0348.png?width=800" },
+    { id: "pbr5", name: "Cargo Snowpants Pink", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/55AFBD9E-3788-41AE-8AD4-5FA8D9A38D79.png?width=800" },
+    { id: "pbr6", name: "Cargo Snowpants Brown", brand: "Briqed", price: 140, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0979/7835/1748/files/1C608895-D802-4268-BDA2-A7B3C391391E.png?width=800" },
+    { id: "pso1", name: "Black Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_9BCC0866-4EEA-4989-89D4-13524A45E4B4_2.jpg?width=800" },
+    { id: "pso2", name: "Twilight Snow Pants", brand: "Solo Apparel", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "navy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_0521A47F-BFD4-4EC3-8032-EE47D0F9D69B.jpg?width=800" },
+    { id: "pso3", name: "White Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_CAC45C60-A1C2-4C40-ADB7-4EFAC00BAC3C.jpg?width=800" },
+    { id: "pso4", name: "Purple Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["purple"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_01638AF3-1D62-4927-8F58-B27AE6A17CEB.jpg?width=800" },
+    { id: "pso5", name: "Light Blue Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_3D9D12EC-8927-4EB8-A8D5-F75011F842F0.jpg?width=800" },
+    { id: "pso6", name: "Pink Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_43ED5D43-68B7-4019-9A3F-C39BB5945FC3.jpg?width=800" },
+    { id: "pso7", name: "Brown Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["burgundy"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_4AB1C889-1AD1-4EF9-83C6-8E21572F33AE.jpg?width=800" },
+    { id: "pso8", name: "Grey Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_0CEF7676-BC0D-434E-99AF-7A044D707618.jpg?width=800" },
+    { id: "pso9", name: "Green Snow Pants", brand: "Solo Apparel", price: 125, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["forest"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_202DD8D4-07BE-43F4-9EBC-1528A45DBB63.jpg?width=800" },
+    { id: "pf1", name: "Dark Gray Contrast Zipper Detail Baggy Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2648-DGRY_M_01.jpg?width=800" },
+    { id: "pf2", name: "Dark Gray Contrast Zipper Detail Baggy Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["charcoal"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2648-DGRY_F_01.jpg?width=800" },
+    { id: "pf3", name: "Downtown Pro 30K Snow Pants — Tan Beige", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sand"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2024/05/4W2A2783-pic-819x1024.jpg" },
+    { id: "pf4", name: "Downtown Cargo Baggy Snow Pants — Pink", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2024/05/4W2A2717-819x1024.jpg" },
+    { id: "pf15", name: "Olive Green Brushed Barrel Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2628-DGRN_M_01.jpg?width=800" },
+    { id: "pf16", name: "Olive Green Brushed Barrel Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2628-DGRN_F_01.jpg?width=800" },
+    { id: "pf17", name: "Downtown Pro 30K Snow Pants — Dark Green", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["forest"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2025/12/4W2A2783-pic-%E6%8B%B7%E8%B4%9D-2-819x1024.jpg" },
+    { id: "pf18", name: "Downtown Cargo Baggy Snow Pants — Dark Grey", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["slate"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2024/05/4W2A2669-819x1024.jpg" },
+    { id: "pf19", name: "Light Blue Snow Pants", brand: "Solo Apparel", price: 110, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_3D9D12EC-8927-4EB8-A8D5-F75011F842F0.jpg?width=800" },
+    { id: "pf20", name: "Light Blue Snow Pants", brand: "Solo Apparel", price: 110, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["sky"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0614/8276/2288/files/temp_image_3D9D12EC-8927-4EB8-A8D5-F75011F842F0.jpg?width=800" },
+    { id: "pf21", name: "Light Gray Baggy Drawstring Durable Snow Pants", brand: "GSOU SNOW", price: 100, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2539-GREY_M_01.jpg?width=800" },
+    { id: "pf22", name: "Light Gray Baggy Drawstring Durable Snow Pants", brand: "GSOU SNOW", price: 100, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["silver"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2539-GREY_F_01.jpg?width=800" },
+    { id: "pf23", name: "Magenta Contrast Stitch Minimal Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2650-BLK-3_M_01.jpg?width=800" },
+    { id: "pf24", name: "Magenta Contrast Stitch Minimal Snow Pants", brand: "GSOU SNOW", price: 134, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["magenta"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2650-BLK-3_F_01.jpg?width=800" },
+    { id: "pf28", name: "Neon Coral Reinforced Knee Scuff Guard Ski Pants", brand: "GSOU SNOW", price: 130, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["coral"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-2344-ORG_01.jpg?width=800" },
+    { id: "pf29", name: "Downtown Pro 30K Snow Pants — Frost Purple", brand: "Ninety Roll", price: 170, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["lavender"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2025/11/4W2A2783-pic-819x1024.jpg" },
+    { id: "pf210", name: "Pinnacle Cargo 30K Snow Pants — Olive Green", brand: "Ninety Roll", price: 170, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive"], tier: "value", fit: "baggy", image: "https://ninetyroll.co/wp-content/uploads/2025/03/%E5%86%9B%E7%BB%BF-1-819x1024.jpg" },
+    { id: "pn1", name: "Hot Bib — Matcha", brand: "Airblaster", price: 182, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["mint"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0236/7291/files/HOT_BIB_MATCHA_HERO1_2526.jpg?v=1755192420&width=800" },
+    { id: "pn2", name: "HUF Double H Shell Pant", brand: "686", price: 162, gender: ["m"], ability: ["intermediate","advanced"], terrain: ["park","groomed"], style: ["street"], colors: ["mint"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN243_HUF-GREEN-COLORBLOCK_1.jpg?v=1757353826&width=800" },
+    { id: "pn3", name: "Genki Pant — Deep Teal", brand: "Yuki Threads", price: 231, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["park","groomed"], style: ["street","freeride"], colors: ["teal"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0388/9917/files/G25GPDTL_0891.jpg?v=1763772389&width=800" },
+    { id: "pn4", name: "Sublime Shell Pant — Yellow Tie Dye", brand: "686", price: 150, gender: ["w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street","retro"], colors: ["yellow"], tier: "value", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/1343/2655/files/M5WN437_SUBLIME-YELLOW-TIE-DYE_1.jpg?v=1757353745&width=800" },
+    { id: "pn5", name: "Blaze Woodland Camo High-Back Cargo Pants", brand: "GSOU SNOW", price: 99, gender: ["m", "w"], ability: ["beginner","intermediate","advanced"], terrain: ["park","groomed"], style: ["street"], colors: ["orange"], tier: "value", fit: "regular", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UPT2681-811_M_01.jpg?v=1781758920&width=800" },
+    { id: "pn6", name: "Hot Lap Pant — Bluey", brand: "Yuki Threads", price: 350, gender: ["m", "w"], ability: ["intermediate","advanced","expert"], terrain: ["park","groomed"], style: ["street","freeride"], colors: ["turquoise"], tier: "mid", fit: "baggy", image: "https://cdn.shopify.com/s/files/1/0388/9917/files/W26HLPBLY_2527.jpg?v=1778550625&width=800" },
   ],
   goggles: [
-    { id: "g1", name: "Helix 2.0 Goggles", brand: "Anon", price: 110, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
-    { id: "g9", name: "Squad ChromaPop Goggles", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["black"], tier: "value" },
-    { id: "g10", name: "Squad ChromaPop Goggles — White", brand: "Smith", price: 145, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
-    { id: "g11", name: "Line Miner Prizm Goggles — Black", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "g12", name: "Comp Goggles", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black"], tier: "value" },
-    { id: "g13", name: "Revolt Goggles", brand: "Giro", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value" },
-    { id: "g14", name: "M5 Goggles", brand: "Anon", price: 300, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "g15", name: "PRO OTG Goggles", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
-    { id: "g16", name: "PRO OTG Goggles — White", brand: "OutdoorMaster", price: 60, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value" },
-    { id: "gr1", name: "Drift — Pure Silver", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["silver"], tier: "value" },
-    { id: "gr2", name: "Drift — Glacier Blue", brand: "RUFE", price: 38, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["sky"], tier: "value" },
-    { id: "gr3", name: "Speedlane — Ice Blue Mirror", brand: "RUFE", price: 42, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "ice"], style: ["classic", "race"], colors: ["turquoise"], tier: "value" },
-    { id: "g2", name: "Squad Mag Goggles", brand: "Smith", price: 210, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
+    { id: "g1", name: "Helix 2.0 Goggles", brand: "Anon", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0648/9266/5939/files/hwtmxvu4ezsqrngyquqi.webp?width=800" },
+    { id: "g9", name: "Squad ChromaPop Goggles", brand: "Smith", price: 135, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/squad-goggles_black-cpEverydayGreenMirror_FRONT.png?width=800" },
+    { id: "g10", name: "Squad ChromaPop Goggles — White", brand: "Smith", price: 135, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/M007880OZ9941_Squad_White_Vapor_ChromaPopEverydayVioletMirror_3Q.png?width=800" },
+    { id: "g11", name: "I/O MAG Goggles", brand: "Smith", price: 295, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "retro"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/io-mag-goggles_black-cpSunGreenMirror_3Q.png?width=800" },
+    { id: "g12", name: "Comp Goggles", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "powder"], style: ["classic", "freeride"], colors: ["black"], tier: "value", image: "https://vault.widen.net/content/opwpnq3cdi?w=1500&h=1500" },
+    { id: "g13", name: "Revolt Goggles", brand: "Giro", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["white"], tier: "value", image: "https://vault.widen.net/content/wzwhyirwzv?w=1500&h=1500" },
+    { id: "g14", name: "M5 Goggles", brand: "Anon", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0648/9266/5939/files/cd1999e2bf94cfba28d39226a55e5d9d4b0d3fde.webp?width=800" },
+    { id: "g15", name: "PRO OTG Goggles", brand: "OutdoorMaster", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0330/6389/5085/files/outdoormaster-otg_snow_goggles-ski-goggles-black_frame_vlt_10_00001.webp?width=800" },
+    { id: "g16", name: "PRO OTG Goggles — White", brand: "OutdoorMaster", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0330/6389/5085/files/outdoormaster-otg_snow_goggles-ski-goggles-white_frame_vlt_13_00001.webp?width=800" },
+    { id: "ge1", name: "Cam Goggles — Matte White Neuron", brand: "Electric", price: 48, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["cobalt", "white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0026/4529/5169/files/2035_EG3523711BLUC_P_1_1.jpg?v=1692811655" },
+    { id: "ge2", name: "Pike Goggles — Auxin Purple", brand: "Electric", price: 64, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["turquoise", "lavender"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0026/4529/5169/files/2034_EG3423701ATMT_P_1_1.jpg?v=1692813001" },
+    { id: "ge3", name: "EK1 Goggles — Flood Blue", brand: "Electric", price: 120, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "freeride"], colors: ["sky", "cobalt"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0026/4529/5169/files/2025_EG2524508-YBLC_P_1.jpg?v=1727470866" },
+    { id: "g17", name: "Squad Goggles — Future Grey Warm Steel", brand: "Smith", price: 165, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["groomed", "park"], style: ["street", "classic"], colors: ["silver"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/squad-goggles_futureGreyWarmSteel-cpSunPlatinumMirror_3Q.png?v=1783634736" },
+    { id: "g2", name: "Squad Mag Goggles", brand: "Smith", price: 265, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/squad-mag-goggles_black-cpSunBlackGoldMirror_3Q.png?width=800" },
     { id: "g3", name: "Line Miner Prizm Goggles", brand: "Oakley", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["white"], tier: "mid", image: "https://assets2.oakley.com/prod-onecp-record-files/pieyewear/0172b1ec-840a-4426-8b5c-b35e00f32d63/0OO7070__707013__OOE__shad__030A.png?impolicy=OO_ratio&width=800" },
-    { id: "g4", name: "M4 Toric Goggles", brand: "Anon", price: 250, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "freeride"], colors: ["charcoal", "orange"], tier: "premium" },
-    { id: "g5", name: "Sentry Pro Goggles", brand: "Salomon", price: 200, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["forest", "black"], tier: "mid" },
-    { id: "g6", name: "Contour Goggles", brand: "Giro", price: 260, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["forest", "black"], tier: "premium" },
-    { id: "g7", name: "4D Mag Goggles", brand: "Smith", price: 280, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black", "sand"], tier: "premium" },
-    { id: "g8", name: "Flight Deck Prizm Goggles", brand: "Oakley", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
+    { id: "g4", name: "Tracker 2.0 Goggles", brand: "Anon", price: 95, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "freeride"], colors: ["black"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0648/9266/5939/files/mv9iqxn9qpftztenzgqm.webp?width=800" },
+    { id: "g5", name: "Sentry Pro Goggles", brand: "Salomon", price: 200, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["powder", "groomed"], style: ["freeride", "classic"], colors: ["black"], tier: "mid", image: "https://cdn.dam.salomon.com/aa328169-00cf-432d-8f67-b2f3013c711c/L47895200/PNG-2000px-max-72dpi.png?pad=0.12,0.12,0.12,0.12" },
+    { id: "g6", name: "Contour Goggles", brand: "Giro", price: 260, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://vault.widen.net/content/onp0hmuh8u?w=1500&h=1500" },
+    { id: "g7", name: "4D Mag Goggles", brand: "Smith", price: 355, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/4d-mag-goggles_black-cpSunGreenMirror_3Q.png?width=800" },
+    { id: "g8", name: "Blazer Goggles", brand: "Smith", price: 105, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["white"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/Blazer_White_M007781DG99C5_3Q.png?width=800" },
   ],
   helmet: [
-    { id: "h1", name: "Ledge MIPS Helmet", brand: "Giro", price: 90, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
-    { id: "h2", name: "Method MIPS Helmet", brand: "Smith", price: 130, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["white"], tier: "value" },
-    { id: "h3", name: "Chase 2 Plus Helmet", brand: "Scott", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["white"], tier: "mid" },
-    { id: "h4", name: "Mission MIPS Helmet", brand: "Smith", price: 150, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["moguls", "groomed"], style: ["classic", "freeride"], colors: ["black"], tier: "mid" },
-    { id: "h5", name: "Neo MIPS Helmet", brand: "Giro", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "park"], style: ["freeride", "street"], colors: ["white"], tier: "mid" },
-    { id: "h8", name: "Trig MIPS Helmet", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "h9", name: "Union MIPS Helmet", brand: "Giro", price: 190, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park"], style: ["street"], colors: ["white"], tier: "premium" },
-    { id: "h6", name: "Vantage 2 MIPS Helmet", brand: "Smith", price: 270, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["black"], tier: "premium" },
-    { id: "h7", name: "Flow Pro MIPS Helmet", brand: "Scott", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice", "backcountry"], style: ["race", "classic"], colors: ["white"], tier: "premium" },
+    { id: "h1", name: "Ledge MIPS Helmet", brand: "Giro", price: 90, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://vault.widen.net/content/huocdzxcii?w=1500&h=1500" },
+    { id: "h2", name: "Method MIPS Helmet", brand: "Smith", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/method-helmet_matteBlack_3Q_5da8a4a1-4fab-4048-9b7d-3c8ac8ede83b.png?width=800" },
+    { id: "h3", name: "Chase 2 Plus Helmet", brand: "Scott", price: 160, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "classic"], colors: ["black"], tier: "mid", image: "https://static.scott-sports.com/image/upload/v1778020329/1494473.png" },
+    { id: "h4", name: "Level MIPS Helmet", brand: "Smith", price: 250, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["moguls", "groomed"], style: ["classic", "freeride"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/E006299KS5155_01_ac2b6f34-fe56-4da9-846b-f6b77b4c3b17.png?width=800" },
+    { id: "h5", name: "Neo MIPS Helmet", brand: "Giro", price: 180, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "park"], style: ["freeride", "street"], colors: ["white"], tier: "mid", image: "https://vault.widen.net/content/rgiwr9aauz?w=1500&h=1500" },
+    { id: "h8", name: "Trig MIPS Helmet", brand: "Giro", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "moguls"], style: ["street", "retro"], colors: ["black"], tier: "mid", image: "https://vault.widen.net/content/c4p2fi338y?w=1500&h=1500" },
+    { id: "h6", name: "Vantage 2 MIPS Helmet", brand: "Smith", price: 295, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "backcountry"], style: ["freeride"], colors: ["sand"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0751/8073/6750/files/E005632NV5559_Vantage_2_Mips_Matte_Chalk_3Q.png?width=800" },
+    { id: "h7", name: "Flow Pro MIPS Helmet", brand: "Scott", price: 220, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice", "backcountry"], style: ["race", "classic"], colors: ["black"], tier: "premium", image: "https://static.scott-sports.com/image/upload/v1778088828/2082990.png" },
   ],
   gloves: [
-    { id: "gl1", name: "PowderBound Gloves", brand: "Columbia", price: 75, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value" },
-    { id: "gl2", name: "Gondy GORE-TEX Glove", brand: "Burton", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["black"], tier: "mid" },
-    { id: "gl3", name: "Titan GORE-TEX Mitt", brand: "Dakine", price: 130, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "freeride"], colors: ["forest", "black"], tier: "mid" },
-    { id: "gl4", name: "Mercury Mitt", brand: "Black Diamond", price: 150, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["white"], tier: "mid" },
-    { id: "gl5", name: "Army Leather Heli Glove", brand: "Hestra", price: 200, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "moguls"], style: ["freeride", "classic"], colors: ["white"], tier: "premium" },
-    { id: "gl6", name: "Fall Line Glove", brand: "Hestra", price: 190, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["forest", "black"], tier: "mid" },
-    { id: "gl7", name: "Leather Fall Line Mitt", brand: "Hestra", price: 210, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "groomed"], style: ["retro", "freeride"], colors: ["cream", "sand"], tier: "premium" },
-    { id: "gl9", name: "901T Lined Heavy-Duty Pigskin Ski Mitt", brand: "Kinco", price: 55, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "backcountry", "groomed", "powder"], style: ["street", "freeride", "classic"], colors: ["sand"], tier: "value", customizable: true, note: "Natural tan leather — the classic. Most people dye, paint or Sharpie them to match their kit." },
-    { id: "glbv1", name: "Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "glbv2", name: "Black & White Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "white"], tier: "value" },
-    { id: "gl11", name: "Mittens", brand: "Bandits Apparels", price: 51, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value" },
-    { id: "gl12", name: "Mittens", brand: "Bandits Apparels", price: 51, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value" },
-    { id: "gl13", name: "Mittens", brand: "Bandits Apparels", price: 51, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value" },
+    { id: "gl1", name: "PowderBound Gloves", brand: "Columbia", price: 75, gender: ["m", "w"], ability: ["beginner", "intermediate"], terrain: ["groomed"], style: ["classic"], colors: ["black"], tier: "value", image: "https://media.columbia.com/i/columbia/2097011_010_f_pu" },
+    { id: "gl2", name: "Gondy GORE-TEX Glove", brand: "Burton", price: 120, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park"], style: ["street", "retro"], colors: ["sand"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0804/4062/3361/files/1032618R82_1.webp?width=800" },
+    { id: "gl3", name: "Titan GORE-TEX Mitt", brand: "Dakine", price: 94, gender: ["m", "w"], ability: ["intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "freeride"], colors: ["forest"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0242/3141/1792/files/TITANGORETEXMITTS-MULLEDBASIL-194626590424_10004299_MULLEDBASL-62M_MAIN.jpg?width=800" },
+    { id: "gl4", name: "Spark Mitts", brand: "Black Diamond", price: 140, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0880/2195/8973/files/801173_9805_Spark_Mitts_Rye-Midnight_Blue_01.jpg?width=800" },
+    { id: "gl5", name: "Army Leather Heli Glove", brand: "Hestra", price: 200, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["backcountry", "moguls"], style: ["freeride", "classic"], colors: ["navy"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776176566637-30570-280_1_Meta.png?v=1776179516" },
+    { id: "gl6", name: "Fall Line Glove", brand: "Hestra", price: 190, gender: ["m", "w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race", "classic"], colors: ["black"], tier: "mid", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776024134785-3000780-100100_1_Meta.png?v=1776184531" },
+    { id: "gl7", name: "Leather Fall Line Mitt", brand: "Hestra", price: 210, gender: ["m", "w"], ability: ["intermediate", "advanced", "expert"], terrain: ["powder", "groomed"], style: ["retro", "freeride"], colors: ["cream"], tier: "premium", image: "https://cdn.shopify.com/s/files/1/0979/8058/0187/files/1776024184266-3000781-060060_1_Meta.png?v=1776184615" },
+    { id: "gl9", name: "901T Lined Heavy-Duty Pigskin Ski Mitt", brand: "Kinco", price: 55, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "backcountry", "groomed", "powder"], style: ["street", "freeride", "classic"], colors: ["sand"], tier: "value", customizable: true, note: "Natural tan leather — the classic. Most people dye, paint or Sharpie them to match their kit.", image: "https://res.cloudinary.com/hdtsjhzsw/image/upload/s--I0aypAvn--/w_902,h_1024,c_lpad,b_white,f_jpg/d6d8ba7fb14701d0fed1eb320956bf77bdc831ac.png" },
+    { id: "glbv1", name: "Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/1E8B0C17-3315-4D47-8BEE-05C8442D2379.png?width=800" },
+    { id: "glbv2", name: "Black & White Insulated Leather Gloves", brand: "Big Vigs Apparel", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black", "white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0740/6108/6777/files/BCE8BC29-F9E8-44B5-931B-C5883B77291E.png?width=800" },
+    { id: "gl11", name: "Black Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00193.jpg?width=800" },
+    { id: "gl12", name: "White Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["white"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00196.jpg?width=800" },
+    { id: "gl13", name: "Pink Mittens", brand: "Bandits Apparels", price: 40, gender: ["m", "w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["blush"], tier: "value", image: "https://cdn.shopify.com/s/files/1/0794/7544/1941/files/DSC00708.jpg?width=800" },
   ],
 };
 
@@ -534,37 +591,54 @@ function colorScore(item, chosen) {
   return 1 + (hits / sel.length) * 3;
 }
 
-function scoreItem(item, answers) {
+/* Skis and boards get judged on how they RIDE first and how they look
+   second. A black park ski is the wrong answer for someone who asked to
+   carve, however perfectly the topsheet matches their palette - you can
+   wear a jacket that clashes, but you can't ride the wrong ski. Colour
+   still counts underfoot, it just breaks ties between boards that
+   already suit the riding rather than deciding the pick.
+
+   Apparel is the opposite: coordinating the outfit IS the product, so
+   colour carries as much weight there as terrain does. */
+const RIDE_FIRST_WEIGHTS = { ability: 6, terrain: 9, style: 9, color: 0.5 };
+const OUTFIT_WEIGHTS = { ability: 4, terrain: 4, style: 4, color: 1 };
+const weightsFor = (category) => (category === "skis" ? RIDE_FIRST_WEIGHTS : OUTFIT_WEIGHTS);
+
+function scoreItem(item, answers, category) {
+  const w = weightsFor(category);
   let score = 0;
-  if (item.ability.includes(answers.ability)) score += 4;
+  if (item.ability.includes(answers.ability)) score += w.ability;
 
   const terrainSel = answers.terrain || [];
   if (terrainSel.length) {
     const matched = item.terrain.filter((t) => terrainSel.includes(t)).length;
-    score += (matched / terrainSel.length) * 4;
+    score += (matched / terrainSel.length) * w.terrain;
   }
 
   const styleSel = answers.style || [];
   if (styleSel.length) {
     const matched = item.style.filter((s) => styleSel.includes(s)).length;
-    score += (matched / styleSel.length) * 4;
+    score += (matched / styleSel.length) * w.style;
   }
 
-  score += colorScore(item, answers.colors);
+  score += colorScore(item, answers.colors) * w.color;
   score += tierProximity(item.tier, answers.budget);
   if (item.fit && item.fit === answers.fit) score += 3;
   return score;
 }
 
-/* Raw score → a friendly percentage for the "match" badge on each
-   card. Ceiling of 22 is the max any item could realistically earn
-   (4 ability + 4 terrain + 4 style + 4 color + 3 tier + 3 fit).
+/* Raw score → a friendly percentage for the "match" badge on each card.
+   The ceiling differs by category because the weights do: skis top out
+   at 29 (6 ability + 9 terrain + 9 style + 2 colour + 3 tier, and no fit
+   field on a ski), apparel at 22 (4+4+4+4 + 3 tier + 3 fit). Using one
+   shared ceiling would make every ski read as a worse match than it is.
    Bounded so it never claims a hollow 100% or an alarming near-zero. */
-const MAX_MATCH_SCORE = 22;
+const MAX_MATCH_SCORE = { skis: 29, default: 22 };
 function matchPercent(item, category, answers, fit, pantFit) {
   const target = category === "pants" ? { ...answers, fit: pantFit } : { ...answers, fit };
-  const raw = scoreItem(item, target);
-  return Math.max(80, Math.min(98, Math.round((raw / MAX_MATCH_SCORE) * 100) + 20));
+  const raw = scoreItem(item, target, category);
+  const ceiling = MAX_MATCH_SCORE[category] ?? MAX_MATCH_SCORE.default;
+  return Math.max(80, Math.min(98, Math.round((raw / ceiling) * 100) + 20));
 }
 
 const TERRAIN_LENGTH_OFFSET = { groomed: -18, ice: -16, moguls: -20, park: -24, powder: -8, backcountry: -6 };
@@ -681,6 +755,22 @@ function buildRankings(answers, sport) {
     const eligible = items.filter((i) => genderMatches(i, answers.gender));
     let pool = eligible.length ? eligible : items;
 
+    // For skis specifically, the TYPE of ski matters more than color or
+    // budget — a black Völkl race ski or K2 all-mountain ski isn't a good
+    // answer to "I ride park," even if the color happens to line up
+    // perfectly. Narrow to the right ski type FIRST, before the budget
+    // filter below, so a lower budget tier can't wipe out every race/park
+    // option before the type filter ever runs (every race-tagged ski in
+    // the catalog happens to be "premium" tier, so filtering budget first
+    // silently emptied the race pool and fell back to the wrong ski type).
+    if (category === "skis" && wantsParkSkis) {
+      const parkSkis = pool.filter((i) => i.terrain.includes("park"));
+      if (parkSkis.length) pool = parkSkis;
+    } else if (category === "skis" && wantsRaceSkis) {
+      const raceSkis = pool.filter((i) => i.style.includes("race"));
+      if (raceSkis.length) pool = raceSkis;
+    }
+
     // Hard budget ceiling. Tier match used to be only a scoring bonus,
     // which meant a "Budget-Friendly" pick could still land on a premium
     // item if it scored well on ability/terrain/style - and testing showed
@@ -688,25 +778,16 @@ function buildRankings(answers, sport) {
     // past the promised total by up to 3x. Budget is now a real filter:
     // never show anything above the selected tier, with a fallback to the
     // unrestricted pool only if a category has nothing at or under it.
+    // For skis this fallback also protects the type narrowing above — if
+    // every race/park ski happens to sit above budget, keep the correct
+    // ski type rather than dropping to an in-budget ski of the wrong type.
     if (answers.budget) {
       const budgetRank = TIER_ORDER.indexOf(answers.budget);
       const withinBudget = pool.filter((i) => TIER_ORDER.indexOf(i.tier) <= budgetRank);
       if (withinBudget.length) pool = withinBudget;
     }
 
-    // For skis specifically, the TYPE of ski matters more than color —
-    // a black Völkl race ski or K2 all-mountain ski isn't a good answer
-    // to "I ride park," even if the color happens to line up perfectly.
-    // Narrow to the right ski type FIRST, so color can only refine
-    // within that pool afterward — never override it.
     let workingPool = pool;
-    if (category === "skis" && wantsParkSkis) {
-      const parkSkis = workingPool.filter((i) => i.terrain.includes("park"));
-      if (parkSkis.length) workingPool = parkSkis;
-    } else if (category === "skis" && wantsRaceSkis) {
-      const raceSkis = workingPool.filter((i) => i.style.includes("race"));
-      if (raceSkis.length) workingPool = raceSkis;
-    }
 
     // Hard guarantee: if any item in the (possibly already ski-type-
     // narrowed) pool comes ENTIRELY in colors the user picked (no stray
@@ -756,10 +837,17 @@ function buildRankings(answers, sport) {
 
     const target = category === "pants" ? { ...scored, fit: pantFit } : scored;
     const sorted = [...workingPool].sort((a, b) => {
-      const diff = scoreItem(b, target) - scoreItem(a, target);
+      const diff = scoreItem(b, target, category) - scoreItem(a, target, category);
       return diff !== 0 ? diff : a.price - b.price;
     });
-    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target));
+    // Skis deliberately opt out of the colour gate: riding type outranks
+    // topsheet colour there, so letting colour narrow the shuffle would
+    // fight the ride-first weighting.
+    const colorRank =
+      category === "skis" || !chosenColors.length
+        ? null
+        : (item) => colorScore(item, chosenColors);
+    rankings[category] = shuffleWithinTopTier(sorted, (item) => scoreItem(item, target, category), colorRank);
   });
 
   /* Colour variety across the outfit.
@@ -818,12 +906,31 @@ function buildRankings(answers, sport) {
    score, capped at the top 4) and shuffles just that group, so the
    featured pick varies run to run while everything shown still sits
    in the same quality tier the answers earned. */
-function shuffleWithinTopTier(sortedList, scoreFn) {
+function shuffleWithinTopTier(sortedList, scoreFn, colorRank) {
   if (sortedList.length <= 1) return sortedList;
   const topScore = scoreFn(sortedList[0]);
   const threshold = topScore * 0.82;
+
+  // Variety must never cost the user the colour they actually asked for.
+  // tierProximity() hands an exact budget-tier match a flat +3, which was
+  // enough to lift a goggle in none of the chosen colours into the "tied"
+  // band beside the one goggle that did match - and the shuffle then had
+  // a real chance of featuring it. Measured over 400 runs, picking
+  // Turquoise at Mid-Range featured a goggle in none of the chosen colours
+  // 73% of the time (Sky, 71%) despite a matching goggle sitting in the
+  // pool, in budget. So an item may only join the
+  // shuffle group if it matches the palette at least as well as the
+  // current best; below that it stays ranked where it is, still reachable
+  // via Search Again.
+  const topColor = colorRank ? colorRank(sortedList[0]) : 0;
   let cut = 1;
-  while (cut < sortedList.length && cut < 4 && scoreFn(sortedList[cut]) >= threshold) cut++;
+  while (
+    cut < sortedList.length &&
+    cut < 4 &&
+    scoreFn(sortedList[cut]) >= threshold &&
+    (!colorRank || colorRank(sortedList[cut]) >= topColor)
+  )
+    cut++;
   const tier = sortedList.slice(0, cut);
   const rest = sortedList.slice(cut);
   for (let i = tier.length - 1; i > 0; i--) {
@@ -847,7 +954,7 @@ const STANCE = [
 function SnowFall() {
   const flakes = Array.from({ length: 34 });
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       <style>{`
         @keyframes snowDrift { from { transform: translateY(-6vh) translateX(0); } to { transform: translateY(106vh) translateX(var(--drift)); } }
       `}</style>
@@ -923,107 +1030,197 @@ function SnowboardIcon({ size = 34, color = "currentColor" }) {
   );
 }
 
-/* A stick figure wearing the full matched setup — each region filled
-   with that category's actual matched colour, so the whole look reads
-   at a glance without needing seven separate swatch tiles. Built from
-   plain rects/circles rather than freehand curves, since a figure
-   made of simple geometric primitives is far less likely to render
-   oddly than hand-tuned bezier paths. */
-function GearFigure({ colors, sport }) {
+/* The rider wearing the full matched setup, drawn as flat line art:
+   every shape is a solid fill with a dark outline, no gradients or
+   shading. That style holds up at small sizes and, more importantly,
+   stays legible whatever colours the match throws at it - a photoreal
+   render would fight the palette rather than show it.
+
+   Each region is filled with that category's actual matched colour, and
+   the trouser silhouette follows the recommended FIT, so a baggy park
+   pant and a slim race pant read as different garments rather than the
+   same shape in a different colour. */
+const INK = "#15171B";
+
+/* Trouser silhouettes by fit. Each entry gives the half-width of the leg
+   at the hip and at the ankle; baggy stays wide all the way down and
+   breaks over the boot, slim tapers hard. */
+const PANT_SHAPE = {
+  slim:    { hip: 10, ankle: 6.5, folds: 0 },
+  regular: { hip: 12, ankle: 9,   folds: 1 },
+  baggy:   { hip: 14, ankle: 14,  folds: 2 },
+};
+
+function luminance(hex) {
+  const h = String(hex || "").replace("#", "");
+  if (h.length !== 6) return 0.5;
+  const n = parseInt(h, 16);
+  if (Number.isNaN(n)) return 0.5;
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+}
+
+/* Seam lines - zips, hems, vents, pockets - are drawn in ink at low
+   opacity, which disappears entirely on a black jacket. Flip them to
+   white there, so an all-black kit still shows its construction instead
+   of rendering as one solid blob. The outlines stay ink either way,
+   since those have to read against the pale plate behind the rider. */
+function detailInk(fill) {
+  return luminance(fill) < 0.42 ? "#FFFFFF" : INK;
+}
+
+function legPath(cxTop, cxBot, shape, yTop, yBot) {
+  const { hip, ankle } = shape;
+  // slight outward bow at the knee so the leg reads as a limb, not a plank
+  const kneeY = yTop + (yBot - yTop) * 0.52;
+  const knee = (hip + ankle) / 2 + 1.5;
+  const cxKnee = (cxTop + cxBot) / 2;
+  return [
+    `M ${cxTop - hip} ${yTop}`,
+    `L ${cxTop + hip} ${yTop}`,
+    `Q ${cxKnee + knee} ${kneeY} ${cxBot + ankle} ${yBot}`,
+    `L ${cxBot - ankle} ${yBot}`,
+    `Q ${cxKnee - knee} ${kneeY} ${cxTop - hip} ${yTop}`,
+    "Z",
+  ].join(" ");
+}
+
+function GearFigure({ colors, sport, pantFit = "regular" }) {
   const { helmet, goggles, jacket, gloves, pants, skis } = colors;
-  const skin = "#C4B5A0";
+  const skin = "#C9B49C";
   const neutral = "#6B6B70";
+  const shape = PANT_SHAPE[pantFit] || PANT_SHAPE.regular;
+  const line = { stroke: INK, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" };
+
+  const hardInk = detailInk(skis || neutral);
+  const jacketInk = detailInk(jacket || neutral);
+  const pantsInk = detailInk(pants || neutral);
+  const helmetInk = detailInk(helmet || "#2A2A2E");
+
   return (
-    <svg viewBox="0 0 152 260" width="100%" height="250" style={{ maxWidth: 185 }}>
-      {/* skis / board — vertical beside the body, roughly where the raised
-          hand grips them. Tips sit at eye level (matching the head at
-          cy=37) rather than towering above the head. Both are noticeably
-          thicker now — a real ski/board reads as a solid plank, not a thin
-          line. Skis get curved upturned tips and a boot binding detail;
-          the snowboard gets angled binding straps, so the two sports
-          actually look distinct from each other. */}
+    <svg viewBox="16 10 140 246" width="100%" height="252" style={{ maxWidth: 195 }}>
+      {/* Paper plate. The ink outlines are near-black, so without a light
+          ground an all-black kit renders as a black shape on a black card
+          and the whole drawing disappears. Same white tile the product
+          thumbnails sit on, so it reads as deliberate rather than stray.
+          Bounds track the viewBox, which is cropped to the rider. */}
+      <rect x="16" y="10" width="140" height="246" rx="10" fill="#F5F2EC" />
+
+      {/* ---- hardgoods, behind the rider ---- */}
       {sport === "snowboard" ? (
-        <>
-          <rect x="102" y="36" width="30" height="203" rx="12" fill={neutral} opacity="0.85" />
-          {/* binding straps, angled like a real stance */}
-          <rect x="96" y="94" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 98)" />
-          <rect x="96" y="172" width="42" height="8" rx="4" fill="#2A2A2E" opacity="0.7" transform="rotate(-8 117 176)" />
-        </>
+        <g {...line}>
+          <rect x="104" y="34" width="32" height="208" rx="15" fill={skis || neutral} />
+          <rect x="99" y="96" width="42" height="9" rx="4.5" fill={hardInk} opacity="0.55" transform="rotate(-8 120 100)" />
+          <rect x="99" y="176" width="42" height="9" rx="4.5" fill={hardInk} opacity="0.55" transform="rotate(-8 120 180)" />
+        </g>
       ) : (
-        <>
-          {/* left ski — thicker body, tip at eye level */}
-          <path d="M 96 58 Q 96 40 107 36 Q 118 40 118 58 L 117 233 Q 117 239 107 239 Q 97 239 96 233 Z" fill={neutral} opacity="0.85" />
-          <rect x="94" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
-          {/* right ski */}
-          <path d="M 120 58 Q 120 40 131 36 Q 142 40 142 58 L 141 233 Q 141 239 131 239 Q 121 239 120 233 Z" fill={neutral} opacity="0.85" />
-          <rect x="118" y="128" width="26" height="9" rx="3.5" fill="#2A2A2E" opacity="0.7" />
-        </>
+        <g {...line}>
+          <path d="M 98 56 Q 98 38 109 34 Q 120 38 120 56 L 119 236 Q 119 242 109 242 Q 99 242 98 236 Z" fill={skis || neutral} />
+          <path d="M 122 56 Q 122 38 133 34 Q 144 38 144 56 L 143 236 Q 143 242 133 242 Q 123 242 122 236 Z" fill={skis || neutral} />
+          <rect x="96" y="128" width="26" height="9" rx="3" fill={hardInk} opacity="0.55" />
+          <rect x="120" y="128" width="26" height="9" rx="3" fill={hardInk} opacity="0.55" />
+        </g>
       )}
 
-      {/* legs — thick rounded-cap strokes function as filled pant legs with
-          real volume, not thin lines. Slightly offset from each other for a
-          natural weight-bearing stance. */}
-      <path d="M 56 138 Q 53 165 54 188 Q 53 212 52 230" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
-      <path d="M 80 138 Q 82 163 83 186 Q 84 210 84 228" stroke={pants || neutral} strokeWidth="22" strokeLinecap="round" fill="none" />
+      {/* ---- trousers: silhouette varies with the recommended fit ---- */}
+      <g {...line}>
+        <path d={legPath(57, 52, shape, 134, 228)} fill={pants || neutral} />
+        <path d={legPath(81, 85, shape, 134, 228)} fill={pants || neutral} />
+        {/* seat/waist band ties the two legs together */}
+        <path d="M 45 134 Q 69 128 93 134 L 93 142 Q 69 136 45 142 Z" fill={pants || neutral} />
+        {/* cargo pocket - only on the roomier cuts, where they actually live */}
+        {shape.folds > 0 && (
+          <>
+            <rect x="40" y="168" width="13" height="16" rx="3" fill={pantsInk} stroke={pantsInk} opacity="0.3" strokeWidth="1.4" />
+            <rect x="88" y="168" width="13" height="16" rx="3" fill={pantsInk} stroke={pantsInk} opacity="0.3" strokeWidth="1.4" />
+          </>
+        )}
+        {/* boot break - baggy fabric stacks over the cuff */}
+        {shape.folds > 1 && (
+          <>
+            <path d="M 42 214 Q 52 210 64 214" fill="none" stroke={pantsInk} strokeWidth="1.4" opacity="0.55" />
+            <path d="M 74 214 Q 85 210 97 214" fill="none" stroke={pantsInk} strokeWidth="1.4" opacity="0.55" />
+          </>
+        )}
+      </g>
 
-      {/* ski boots — angled, chunky, filled, rounded corners instead of
-          sharp trapezoid points */}
-      <path d="M 45 227 Q 41 227 41 231 L 39 238 Q 39 240 41 240 L 63 240 Q 65 240 65 238 L 63 231 Q 63 227 59 227 Z" fill={neutral} />
-      <path d="M 77 225 Q 73 225 73 229 L 71 236 Q 71 238 73 238 L 95 238 Q 97 238 97 236 L 95 229 Q 95 225 91 225 Z" fill={neutral} />
+      {/* ---- boots ---- */}
+      <g {...line}>
+        <path d="M 43 226 Q 39 226 39 231 L 37 240 Q 37 243 40 243 L 64 243 Q 67 243 67 240 L 65 231 Q 65 226 61 226 Z" fill={neutral} />
+        <path d="M 75 226 Q 71 226 71 231 L 69 240 Q 69 243 72 243 L 96 243 Q 99 243 99 240 L 97 231 Q 97 226 93 226 Z" fill={neutral} />
+        <path d="M 41 234 L 65 234" strokeWidth="1.4" opacity="0.5" />
+        <path d="M 73 234 L 97 234" strokeWidth="1.4" opacity="0.5" />
+      </g>
 
-      {/* torso — filled jacket silhouette: wide shoulders, tapered waist,
-          slight flare at the hem */}
-      <path
-        d="M 44 66 Q 39 71 41 82 Q 44 102 47 118 Q 47.5 130 48 140 L 88 140 Q 88.5 130 89 118 Q 92 102 95 82 Q 97 71 92 66 Q 80 60 68 60 Q 56 60 44 66 Z"
-        fill={jacket || neutral}
-      />
-      {/* center zipper — a single line down the front reads as "jacket"
-          much more than a plain filled shape does */}
-      <line x1="68" y1="64" x2="68" y2="138" stroke="#000000" strokeWidth="1.5" opacity="0.25" />
-      {/* chest pocket detail */}
-      <rect x="73" y="90" width="14" height="10" rx="4" fill="#000000" opacity="0.12" />
+      {/* ---- jacket ---- */}
+      <g {...line}>
+        <path
+          d="M 43 66 Q 37 72 39 84 Q 43 104 46 120 Q 46.5 132 47 142 L 91 142 Q 91.5 132 92 120 Q 95 104 99 84 Q 101 72 95 66 Q 82 59 69 59 Q 56 59 43 66 Z"
+          fill={jacket || neutral}
+        />
+        {/* hem band, cuffs and centre zip - the details that say "shell" */}
+        <path d="M 47 134 L 91 134" stroke={jacketInk} strokeWidth="1.6" opacity="0.55" />
+        <path d="M 69 63 L 69 134" stroke={jacketInk} strokeWidth="1.6" opacity="0.5" />
+        <rect x="74" y="88" width="14" height="11" rx="3" fill={jacketInk} stroke={jacketInk} opacity="0.28" strokeWidth="1.4" />
+      </g>
 
-      {/* left arm — upper arm and forearm as two thick rounded-cap strokes
-          meeting at an elbow angle, reading as a real sleeve with a bend
-          rather than one thin line */}
-      <path d="M 46 72 Q 36 86 36 102" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
-      <path d="M 36 102 Q 36 118 39 130" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
-      <rect x="30" y="126" width="16" height="14" rx="6" fill={gloves || neutral} />
+      {/* ---- arms ---- */}
+      <g {...line}>
+        {/* Sleeves are strokes, not fills, so the outline is faked by laying
+            a wider ink stroke underneath - stroking a stroke would just put
+            a line down the middle of the arm. */}
+        <path d="M 45 71 Q 34 86 34 103 Q 34 119 37 131" fill="none" strokeWidth="21" />
+        <path d="M 45 71 Q 34 86 34 103 Q 34 119 37 131" fill="none" stroke={jacket || neutral} strokeWidth="17" />
+        <path d="M 93 71 Q 103 64 108 56 L 106 40" fill="none" strokeWidth="21" />
+        <path d="M 93 71 Q 103 64 108 56 L 106 40" fill="none" stroke={jacket || neutral} strokeWidth="17" />
+        <rect x="28" y="127" width="18" height="15" rx="6" fill={gloves || neutral} />
+        <rect x="98" y="31" width="18" height="15" rx="6" fill={gloves || neutral} />
+      </g>
 
-      {/* right arm — raised and bent at the elbow to grip the ski/board */}
-      <path d="M 90 72 Q 100 66 105 59" stroke={jacket || neutral} strokeWidth="17" strokeLinecap="round" fill="none" />
-      <path d="M 105 59 L 103 42" stroke={jacket || neutral} strokeWidth="15" strokeLinecap="round" fill="none" />
-      <rect x="96" y="34" width="16" height="14" rx="6" fill={gloves || neutral} />
+      {/* ---- collar, neck, head ---- */}
+      <g {...line}>
+        <path d="M 50 61 Q 69 75 88 61 L 88 69 Q 69 82 50 69 Z" fill={jacket || neutral} />
+        <rect x="63" y="49" width="12" height="14" rx="4" fill={skin} />
+        <circle cx="69" cy="36" r="16" fill={skin} />
+      </g>
 
-      {/* hood, bunched at the collar under the helmet */}
-      <path d="M 50 62 Q 68 76 86 62 L 86 68 Q 68 82 50 68 Z" fill={jacket || neutral} opacity="0.9" />
+      {/* ---- helmet: crown only, stopping above the brow so the goggles
+              have somewhere to sit ---- */}
+      <g {...line}>
+        <path d="M 49 33 A 20 17 0 0 1 89 33 Q 89 38 85 39 L 53 39 Q 49 38 49 33 Z" fill={helmet || "#2A2A2E"} />
+        {/* vents */}
+        <path d="M 60 23 L 60 29" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        <path d="M 69 21 L 69 28" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        <path d="M 78 23 L 78 29" stroke={helmetInk} strokeWidth="1.6" opacity="0.5" />
+        {/* ear pad */}
+        <path d="M 50 37 Q 46 43 50 48 Q 54 44 53 39 Z" fill={helmet || "#2A2A2E"} strokeWidth="1.6" />
+      </g>
 
-      {/* neck */}
-      <rect x="62" y="50" width="12" height="14" rx="4" fill={skin} />
-
-      {/* head */}
-      <circle cx="68" cy="37" r="16" fill={skin} />
-
-      {/* helmet — sized to cover only the crown down to just above eye
-          level, not the whole head. The previous version extended down
-          far enough to sit on top of and completely hide the goggles -
-          that was the actual bug, not a colour or detail issue. */}
-      <path
-        d="M 48 34 A 20 17 0 0 1 88 34 L 88 34 Q 88 38 84 39 L 52 39 Q 48 38 48 34 Z"
-        fill={helmet || "#2A2A2E"}
-      />
-      <path d="M 56 23 Q 68 20 80 23" stroke="#000000" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
-      <path d="M 54 28 Q 68 25 82 28" stroke="#000000" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
-
-      {/* goggles — drawn AFTER the helmet so they sit visibly on top of
-          it, right at the helmet's bottom rim. Frame + separate lens
-          inset is what actually reads as goggles rather than a flat band. */}
-      <rect x="49" y="38" width="38" height="14" rx="7" fill="#161616" />
-      <rect x="52.5" y="40.5" width="31" height="9" rx="4.5" fill={goggles || "#3A6EA5"} />
-      <path d="M 57 42 L 70 46 L 65 48 L 55 44.5 Z" fill="#FFFFFF" opacity="0.28" />
-      <path d="M 49 45 Q 45 45 44 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M 87 45 Q 91 45 92 42" stroke="#161616" strokeWidth="3" fill="none" strokeLinecap="round" />
+      {/* ---- goggles: drawn last so they sit on top of the helmet rim,
+              with the strap running back over the shell ---- */}
+      <g {...line}>
+        <path d="M 49 41 Q 44 41 43 37" fill="none" strokeWidth="4" stroke={INK} />
+        <path d="M 89 41 Q 94 41 95 37" fill="none" strokeWidth="4" stroke={INK} />
+        <rect x="48" y="37" width="42" height="15" rx="7.5" fill={INK} />
+        <rect x="51.5" y="39.5" width="35" height="10" rx="5" fill={goggles || "#3A6EA5"} strokeWidth="1.4" />
+        {/* lens glint */}
+        <path d="M 57 42 L 71 46 L 66 48.5 L 55 45 Z" fill="#FFFFFF" opacity="0.3" stroke="none" />
+      </g>
     </svg>
+  );
+}
+
+/* Numbered section for the About page. Long-form prose is the one place
+   in this app that needs a comfortable reading measure, so the body is
+   capped rather than filling the container. */
+function AboutSection({ n, title, children }) {
+  return (
+    <section className="mb-11">
+      <div className="flex items-baseline gap-3 mb-3">
+        <span className="text-xs font-bold tracking-[0.2em] text-white/30 tabular-nums">{n}</span>
+        <h2 className="font-['Barlow_Condensed'] font-bold text-2xl uppercase tracking-wide leading-none">{title}</h2>
+      </div>
+      <div className="pl-0 sm:pl-9 max-w-xl text-sm text-white/60 leading-relaxed space-y-3.5">{children}</div>
+    </section>
   );
 }
 
@@ -1105,7 +1302,7 @@ function ElevationProgress({ step, total, sport }) {
 function MountainField() {
   const dots = Array.from({ length: 90 });
   return (
-    <div className="fixed inset-0 -z-10 bg-black overflow-hidden">
+    <div className="absolute inset-0 -z-10 bg-black overflow-hidden">
       <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice" className="w-full h-full">
         <defs>
           <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="white" strokeWidth="0.6" /></pattern>
@@ -1122,6 +1319,43 @@ function MountainField() {
         <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="url(#hatch2)" opacity="0.5" />
         <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="none" stroke="white" strokeWidth="1.4" opacity="0.9" />
       </svg>
+    </div>
+  );
+}
+
+/* Product shots are hotlinked from brand CDNs, which rotate and retire URLs
+   between seasons, so a dead image is a matter of when rather than if. The
+   previous inline onError tried to reveal a sibling placeholder that React
+   only rendered when `image` was absent entirely - so when a URL DID break,
+   it hid the <img> and revealed nothing, leaving a blank gap in the card.
+   Owning the failure in local state means a broken URL degrades to exactly
+   the same colored icon panel that image-less items already use. */
+function ProductImage({ item, category, sport, chosenColors }) {
+  const [failed, setFailed] = useState(false);
+
+  if (item.image && !failed) {
+    return (
+      <img
+        src={item.image}
+        alt={`${item.brand} ${item.name}`}
+        className="w-full aspect-square object-contain rounded-lg border border-white/15 bg-white p-1"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  const overlap = item.colors.filter((c) => (chosenColors || []).includes(c));
+  const primary = colorById[overlap[0] || item.colors[0]];
+  const Icon =
+    CATEGORY_ICON_FALLBACK[category] ||
+    (category === "skis" ? (sport === "snowboard" ? SnowboardIcon : SkiIcon) : Shirt);
+  return (
+    <div
+      className="w-full aspect-square rounded-lg border border-white/15 flex items-center justify-center"
+      style={{ backgroundColor: primary?.hex || "#2A2A2E" }}
+    >
+      <Icon size={32} color={primary?.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={1.8} />
     </div>
   );
 }
@@ -1181,6 +1415,7 @@ function Chip({ children }) {
 
 export default function SlopeFit() {
   const [phase, setPhase] = useState("sport-select");
+  const stats = useMemo(() => catalogStats(), []);
   const [sport, setSport] = useState(null); // "ski" | "snowboard"
   const [previousPhase, setPreviousPhase] = useState("intro");
   const [currency, setCurrency] = useState("CAD");
@@ -1194,7 +1429,8 @@ export default function SlopeFit() {
   const [user, setUser] = useState(null);
   const [isPremium, setIsPremium] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
-  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error"
+  const [authStatus, setAuthStatus] = useState(null); // null | "sending" | "sent" | "error" | "rate_limited"
+  const [authRetryAt, setAuthRetryAt] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({ terrain: [], style: [], colors: [] });
   const [picks, setPicks] = useState({});
@@ -1254,6 +1490,13 @@ export default function SlopeFit() {
   async function sendMagicLink(e) {
     e.preventDefault();
     if (!authEmail) return;
+    const recentAttempts = getRecentAuthAttempts();
+    if (recentAttempts.length >= AUTH_ATTEMPT_LIMIT) {
+      setAuthRetryAt(Math.min(...recentAttempts) + AUTH_ATTEMPT_WINDOW_MS);
+      setAuthStatus("rate_limited");
+      return;
+    }
+    recordAuthAttempt();
     setAuthStatus("sending");
     localStorage.setItem("slopefit_return_to_premium", "true");
     if (sport) localStorage.setItem("slopefit_sport", sport);
@@ -1276,6 +1519,20 @@ export default function SlopeFit() {
     setPreviousPhase(phase);
     setPhase("premium");
     setClickedPlan(null);
+  }
+
+  function goToAbout() {
+    setPreviousPhase(phase);
+    setPhase("about");
+    window.scrollTo({ top: 0 });
+  }
+
+  function goToLegal() {
+    /* Don't record another legal/about page as the return target, or Back
+       bounces between the two instead of returning to the real screen. */
+    if (phase !== "legal" && phase !== "about") setPreviousPhase(phase);
+    setPhase("legal");
+    window.scrollTo({ top: 0 });
   }
 
   const canAdvance = (() => {
@@ -1470,7 +1727,7 @@ export default function SlopeFit() {
             )}
             {phase === "intro" ? (
               <button onClick={() => setPhase("quiz")} className="text-xs uppercase tracking-widest font-bold bg-white text-black px-4 py-2 rounded-full hover:bg-white/85 transition-colors flex-shrink-0">Start</button>
-            ) : phase !== "premium" && (
+            ) : phase !== "premium" && phase !== "about" && phase !== "legal" && (
               <span className="text-xs uppercase tracking-widest text-white/50 font-semibold flex-shrink-0">
                 {phase === "quiz" ? `Step ${stepIndex + 1} / ${STEPS.length}` : "Your Setup"}
               </span>
@@ -1528,9 +1785,9 @@ export default function SlopeFit() {
               </button>
 
               <p className="text-sm text-white/45 mt-8 pt-6 border-t border-white/10 max-w-md leading-relaxed">
-                Matched against <span className="text-white font-semibold">38 real brands</span> across{" "}
-                <span className="text-white font-semibold">237 products</span> and{" "}
-                <span className="text-white font-semibold">6 gear categories</span> — not a generic catalog.
+                Matched against <span className="text-white font-semibold">{stats.brands} real brands</span> across{" "}
+                <span className="text-white font-semibold">{stats.products} products</span> and{" "}
+                <span className="text-white font-semibold">{stats.categories} gear categories</span> — not a generic catalog.
               </p>
             </div>
 
@@ -1586,24 +1843,44 @@ export default function SlopeFit() {
             </div>
 
             <footer className="pt-8 mt-2 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex items-center gap-3">
+              {/* Wraps rather than overflowing - the footer container is only
+                  768px and now carries three links beside the disclosure.
+                  Separators are gaps, not left-borders, because a border
+                  reads as a stray mark once an item wraps to its own line. */}
+              <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Mountain size={16} color="#FFFFFF" strokeWidth={2.6} opacity={0.6} />
                   <span className="font-['Barlow_Condensed'] font-bold text-sm tracking-wide uppercase text-white/60">SlopeFit</span>
                 </div>
                 <button
                   onClick={() => setPhase("sport-select")}
-                  className="text-xs uppercase tracking-widest font-semibold text-white/40 hover:text-white transition-colors border-l border-white/15 pl-3"
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
                 >
                   Switch to {sport === "snowboard" ? "Skiing" : "Snowboarding"}
                 </button>
+                <button
+                  onClick={goToAbout}
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  How we pick
+                </button>
+                <button
+                  onClick={goToLegal}
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Privacy &amp; terms
+                </button>
               </div>
-              <p className="text-xs text-white/35 max-w-md sm:text-right leading-relaxed">
+              {/* The affiliate disclosure has to be legible to count as one.
+                  At white/35 over the crosshatch it was effectively invisible
+                  on mobile, which is both an FTC "clear and conspicuous"
+                  problem and something networks check for at review. */}
+              <p className="text-xs text-white/70 max-w-md sm:text-right leading-relaxed">
                 Some links may be affiliate links — we may earn a commission at no extra cost to you, and it
                 never influences which gear gets recommended.
                 <br />
-                Prototype — not affiliated with or endorsed by any brand shown. Product names and prices are
-                for demonstration and should be verified before purchase.
+                Not affiliated with or endorsed by any brand shown. Prices and availability change —
+                confirm on the retailer's page before buying.
               </p>
             </footer>
           </div>
@@ -1930,27 +2207,7 @@ export default function SlopeFit() {
                 const pct = matchPercent(item, category, answers, fit, pantFit);
                 return (
                   <div key={category} className="rounded-xl border border-white/16 bg-white/[0.04] backdrop-blur-sm p-5 flex flex-col gap-3 hover:border-white/35 hover:bg-white/[0.07] transition-colors">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={`${item.brand} ${item.name}`}
-                        className="w-full aspect-[4/3] object-cover rounded-lg border border-white/15 bg-black/20"
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling.style.display = "flex"; }}
-                      />
-                    ) : null}
-                    {!item.image && (() => {
-                      const chosen = answers.colors || [];
-                      const overlap = item.colors.filter((c) => chosen.includes(c));
-                      const primaryId = overlap[0] || item.colors[0];
-                      const primary = colorById[primaryId];
-                      const Icon = CATEGORY_ICON_FALLBACK[category] || (category === "skis" ? (sport === "snowboard" ? SnowboardIcon : SkiIcon) : Shirt);
-                      return (
-                        <div className="w-full aspect-[4/3] rounded-lg border border-white/15 flex items-center justify-center" style={{ backgroundColor: primary?.hex || "#2A2A2E" }}>
-                          <Icon size={32} color={primary?.tone === "light" ? "#0B0B0C" : "#FFFFFF"} strokeWidth={1.8} />
-                        </div>
-                      );
-                    })()}
+                    <ProductImage item={item} category={category} sport={sport} chosenColors={answers.colors} />
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <span className="text-xs uppercase tracking-widest text-white/45 font-semibold block">
@@ -2031,7 +2288,7 @@ export default function SlopeFit() {
                 });
                 return (
                   <div className="rounded-xl border border-white/18 bg-white/[0.03] py-6 flex flex-col items-center">
-                    <GearFigure colors={resolvedColors} sport={sport} />
+                    <GearFigure colors={resolvedColors} sport={sport} pantFit={pantFit} />
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-4 px-4">
                       {Object.entries(setup).map(([category, item]) => {
                         if (!item || !resolvedColors[category]) return null;
@@ -2072,7 +2329,328 @@ export default function SlopeFit() {
             <div className="flex flex-wrap items-center gap-5">
               <button onClick={restart} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><RotateCcw size={16} /> Start over</button>
               <button onClick={() => { setStepIndex(0); setPhase("quiz"); }} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ChevronLeft size={16} /> Change my answers</button>
+              <button onClick={goToAbout} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ListChecks size={16} /> How we picked this</button>
             </div>
+          </div>
+        )}
+
+        {phase === "legal" && (
+          <div style={{ animation: "slopefitIn 0.4s ease" }} className="pb-6">
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mb-6">
+              <ChevronLeft size={18} /> Back
+            </button>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Legal</p>
+            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-3 leading-[0.95]">Privacy<br />and terms</h1>
+            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-8">Last updated {LEGAL_UPDATED}</p>
+
+            <div className="rounded-2xl border border-white/12 bg-black/80 p-6 sm:p-8 mb-8">
+              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5">Privacy</h2>
+              <div className="rounded-xl border border-white/15 bg-white/[0.05] p-5 mb-10 max-w-xl">
+                <p className="text-sm text-white/75 leading-relaxed">
+                  <strong className="text-white">The short version:</strong> your quiz answers — including
+                  your height and weight — never leave your browser. There are no analytics, no tracking
+                  pixels and no advertising cookies anywhere on this site. The only personal information
+                  we ever receive is your email address, and only if you choose to sign in.
+                </p>
+              </div>
+
+              <AboutSection n="01" title="What stays on your device">
+                <p>
+                  The quiz runs entirely in your browser. Your answers — gender, ability, terrain, style,
+                  height, weight, colours and budget — are held in memory while you use the page and are
+                  gone when you close the tab. They are never transmitted to us or to anyone else.
+                </p>
+                <p>A few small values are saved in your browser's local storage:</p>
+                <ul className="list-none space-y-2 my-3">
+                  {[
+                    ["slopefit_auth_attempts", "Timestamps of recent sign-in attempts, so the sign-in form can rate-limit itself. No email addresses are stored here."],
+                    ["slopefit_sport", "Whether you last chose skiing or snowboarding, so returning from a sign-in link puts you back where you were."],
+                    ["slopefit_return_to_premium", "A flag marking that you were heading to the Premium page when you signed in."],
+                  ].map(([k, v]) => (
+                    <li key={k}>
+                      <code className="text-white/85 text-[12px] bg-white/10 rounded px-1.5 py-0.5">{k}</code>
+                      <span className="block mt-1">{v}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p>
+                  If you sign in, Supabase — the service that handles authentication — also stores your
+                  session in local storage so you stay signed in. Clearing your browser's site data
+                  removes all of it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="02" title="What we hold on a server">
+                <p>
+                  Only if you sign in: your <strong className="text-white/85">email address</strong>, and a
+                  flag recording whether your account is Premium. That's the entire record. We do not store
+                  your quiz answers, your measurements, your recommendations or your browsing history
+                  against your account.
+                </p>
+                <p>
+                  Sign-in uses a one-time link sent to your email. We never ask for or store a password.
+                  Authentication and that record are handled by Supabase acting as our processor.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="03" title="What other companies can see">
+                <p>
+                  Being straight about this, because most sites aren't:
+                </p>
+                <ul className="list-none space-y-2.5 my-1">
+                  {[
+                    "Our host, Vercel, keeps standard server logs, which include IP addresses. That is ordinary web hosting, not analytics we run.",
+                    "Product photographs are loaded directly from each brand's own servers rather than copied onto ours. That means the brand's image host can see your IP address and which image was requested — the same as if you visited their site. It also means we are showing you the brand's real photo rather than a stale copy.",
+                    "If a \"Shop\" link is an affiliate link, following it hands you to that retailer or affiliate network, which will set its own cookies under its own privacy policy. We receive no personal information back — at most an anonymous record that a sale occurred.",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-3 items-start">
+                      <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AboutSection>
+
+              <AboutSection n="04" title="What we don't do">
+                <p>
+                  We do not sell, rent or share your personal information. We do not run advertising
+                  networks, analytics packages, session recorders or tracking pixels. We do not build a
+                  profile of you, and we do not email you anything except the sign-in link you asked for.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="05" title="Your choices">
+                <p>
+                  Clearing your browser's site data removes everything stored locally. Signing out ends
+                  your session. To see what we hold about you, or to have your account and email deleted
+                  entirely, email us and we'll action it — there isn't much to delete.
+                </p>
+                <p>
+                  SlopeFit isn't directed at children under 13, and we don't knowingly collect information
+                  from them.
+                </p>
+              </AboutSection>
+
+              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5 mt-14 pt-10 border-t border-white/12">Terms of use</h2>
+
+              <AboutSection n="06" title="What SlopeFit is">
+                <p>
+                  SlopeFit is a free tool that suggests gear based on a short questionnaire. Recommendations
+                  are informational. They are a starting point for your own research, not professional
+                  fitting advice, and not a guarantee that a product will suit you.
+                </p>
+                <p>
+                  We are not a retailer. We don't sell, stock, ship or handle returns for anything shown —
+                  every purchase is between you and whichever retailer you buy from, under their terms.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="07" title="Accuracy">
+                <p>
+                  Every product is checked against the brand's own live listing when it's added to the
+                  catalog, but prices change, colourways get discontinued and stock sells out. Figures shown
+                  are what the brand listed at the time, and non-USD prices are converted at approximate
+                  fixed rates. Always confirm price, size and availability on the retailer's own page before
+                  buying.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="08" title="Safety">
+                <p>
+                  Skiing and snowboarding carry real risk of serious injury. Nothing here is a substitute
+                  for properly fitted equipment. In particular, <strong className="text-white/85">bindings
+                  must be mounted and adjusted by a qualified technician</strong>, and helmets and boots
+                  should be fitted in person. Suggested lengths and sizes are calculated estimates, not a
+                  fitting.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="09" title="Brands and trademarks">
+                <p>
+                  All brand names, product names, logos and photographs belong to their respective owners
+                  and are used to identify the products described. SlopeFit is not affiliated with,
+                  endorsed by or sponsored by any brand shown. If you own a brand featured here and want a
+                  listing corrected or removed, email us and we'll handle it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="10" title="Accounts and acceptable use">
+                <p>
+                  Accounts are personal to you — the sign-in link sent to your email is effectively a
+                  password, so don't forward it. Don't attempt to scrape, overload or break the site, and
+                  don't reuse the catalog wholesale elsewhere.
+                </p>
+                <p>
+                  The service is provided "as is", without warranty. To the fullest extent permitted by
+                  law, we are not liable for losses arising from your use of the site or from any purchase
+                  you make through it.
+                </p>
+              </AboutSection>
+
+              <AboutSection n="11" title="Changes and contact">
+                <p>
+                  If these terms or the privacy policy change materially, the date at the top of this page
+                  changes with them. Questions about either, or about anything else on the site:
+                </p>
+                {CONTACT_EMAIL && (
+                  <p>
+                    <a href={`mailto:${CONTACT_EMAIL}`} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                      {CONTACT_EMAIL}
+                    </a>
+                  </p>
+                )}
+              </AboutSection>
+            </div>
+
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mt-4">
+              <ChevronLeft size={16} /> Back to {previousPhase === "results" ? "your setup" : "SlopeFit"}
+            </button>
+          </div>
+        )}
+
+        {phase === "about" && (
+          <div style={{ animation: "slopefitIn 0.4s ease" }} className="pb-6">
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-1 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mb-6">
+              <ChevronLeft size={18} /> Back
+            </button>
+
+            <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">About</p>
+            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-4 leading-[0.95]">How SlopeFit<br />picks your gear</h1>
+            {/* Long-form prose needs a scrim. The mountain art sits behind
+                every phase, and unlike the card-based screens this page puts
+                body text straight onto it - the ridge lines cut through
+                paragraphs badly, on mobile especially. */}
+            <div className="rounded-2xl border border-white/12 bg-black/80 p-6 sm:p-8 mb-8">
+            <p className="text-base text-white/65 max-w-xl mb-12 leading-relaxed">
+              SlopeFit is a gear-matching tool, not a shop. You answer a short quiz, and a scoring
+              model ranks {stats.products} products from {stats.brands} brands against your answers to
+              build one coordinated setup. This page explains exactly how that works, how gear earns a
+              place in the catalog, and what the tool can't do — so you can judge the recommendations
+              for yourself.
+            </p>
+
+            <AboutSection n="01" title="The matching model">
+              <p>
+                Every item carries tags for ability level, terrain, riding style, colour, price tier
+                and — for outerwear — cut. Your answers are scored against those tags, and the highest
+                scoring item in each category becomes your featured pick. Nothing is hand-picked and
+                nothing is sponsored.
+              </p>
+              <p>
+                The weighting is not the same across categories, on purpose. <strong className="text-white/85">For skis
+                and boards, how you ride outranks how it looks.</strong> Terrain and style each carry
+                roughly eighteen times the weight of colour, because a black race ski is a bad answer
+                to "I ride park" no matter how well the colour lines up. Ability sits just behind them.
+              </p>
+              <p>
+                <strong className="text-white/85">For outerwear and accessories the balance flips
+                toward colour</strong>, which is the whole point of a coordinated kit. Ability, terrain
+                and style still lead, but colour counts for meaningfully more than it does on hardgoods.
+              </p>
+              <p>
+                Two hard rules override the scoring. Your budget is a ceiling, not a suggestion — nothing
+                above your selected tier is shown unless a category has nothing at or below it. And if
+                anything in the pool matches the colours you picked, something matching them is what you
+                get; a better score elsewhere can't take that slot.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="02" title="Sizing and fit">
+              <p>
+                Ski and board length is calculated from your height and weight, then adjusted for
+                ability and terrain — powder and freeride push longer, park pushes shorter, beginners
+                come down a little. Apparel sizing works off height and build, with a nudge from BMI at
+                the extremes.
+              </p>
+              <p>
+                Cut is driven by your style rather than your measurements alone. Park and street answers
+                return baggy outright, race returns slim outright, and everything between leans on build.
+                Snowboarders get relaxed-fit pants regardless of style, because that is what riders
+                actually wear for boot and stance mobility.
+              </p>
+              <p className="text-white/45">
+                These are starting points, not fittings. Boot sizing especially should be done in person.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="03" title="How gear gets into the catalog">
+              <p>The catalog is built by hand against a fixed standard. To be listed, a product must:</p>
+              <ul className="list-none space-y-2.5 my-4">
+                {[
+                  "Actually exist. Every item is checked against the brand's own live product feed — not a description, not a lookalike, the exact product.",
+                  "Carry the brand's own photography, verified to load and to show the colourway named.",
+                  "Have its colour tags measured from that photograph, rather than taken from the marketing name. Colourways called things like \"Atomic Mint\" or \"Flood Blue\" rarely describe what you actually see.",
+                  "Come from a brand that makes or commissions its own product.",
+                ].map((t) => (
+                  <li key={t} className="flex gap-3 items-start">
+                    <Check size={16} strokeWidth={3} className="mt-1 flex-shrink-0 opacity-70" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+              <p>
+                That last rule has teeth. Brands have been removed after their "own" product photos turned
+                out to be supplier images lifted from AliExpress — same file, same filename, still live on
+                the supplier's servers. Relabelled dropship gear doesn't belong next to a Hestra mitt, so
+                it goes.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="04" title="Independence">
+              <p>
+                No brand pays to appear here, and no brand can pay to rank higher. Ranking comes from your
+                answers and the tags above — there is no field in the catalog that a brand could buy.
+              </p>
+              <p>
+                Some "Shop" links may be affiliate links, meaning we could earn a commission if you buy
+                through them, at no extra cost to you. That commission never influences what gets
+                recommended: the scoring runs before any link is built, and the code has no access to
+                commission rates.
+              </p>
+            </AboutSection>
+
+            <AboutSection n="05" title="What this tool can't do">
+              <ul className="list-none space-y-2.5 my-1">
+                {[
+                  "Prices drift and stock sells out. Figures shown are what the brand listed when the item was added — always confirm on the retailer's page before buying.",
+                  "Non-USD prices are converted at approximate fixed rates, not a live feed.",
+                  "Colour on a screen is not colour in daylight, and mirrored goggle lenses in particular photograph very differently from how they look on your face.",
+                  "It can't replace a boot fitter, a demo day, or asking someone at your local hill.",
+                ].map((t) => (
+                  <li key={t} className="flex gap-3 items-start">
+                    <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </AboutSection>
+
+            {CONTACT_EMAIL && (
+              <AboutSection n="06" title="Get in touch">
+                <p>
+                  Spotted a product that's wrong, discontinued, or mispriced? Tell us and it gets fixed —
+                  corrections are the main way the catalog stays honest.
+                </p>
+                <p>
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                    {CONTACT_EMAIL}
+                  </a>
+                </p>
+                <p>
+                  See also our{" "}
+                  <button onClick={goToLegal} className="text-white font-semibold underline underline-offset-4 hover:text-white/70 transition-colors">
+                    privacy policy and terms
+                  </button>
+                  .
+                </p>
+              </AboutSection>
+            )}
+            </div>
+
+            <button onClick={() => setPhase(previousPhase)} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors mt-4">
+              <ChevronLeft size={16} /> Back to {previousPhase === "results" ? "your setup" : "SlopeFit"}
+            </button>
           </div>
         )}
 
@@ -2106,6 +2684,15 @@ export default function SlopeFit() {
               ) : authStatus === "sent" ? (
                 <p className="text-sm text-white/70">
                   Check <span className="text-white font-semibold">{authEmail}</span> for a sign-in link.
+                </p>
+              ) : authStatus === "rate_limited" ? (
+                <p className="text-sm text-white/70">
+                  Too many sign-in attempts. Try again in{" "}
+                  <span className="text-white font-semibold">
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000))} minute
+                    {Math.max(1, Math.ceil((authRetryAt - Date.now()) / 60000)) === 1 ? "" : "s"}
+                  </span>
+                  .
                 </p>
               ) : (
                 <form onSubmit={sendMagicLink} className="flex flex-col sm:flex-row gap-3">
