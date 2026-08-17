@@ -1105,6 +1105,18 @@ function GearFigure({ colors, sport, pantFit = "regular" }) {
           Bounds track the viewBox, which is cropped to the rider. */}
       <rect x="16" y="10" width="140" height="246" rx="10" fill="#F5F2EC" />
 
+      {/* ---- ground: anchors the rider so the card doesn't read as the
+              figure floating on blank paper, and nods at the snowfall
+              motif used elsewhere on the site ---- */}
+      <g>
+        <ellipse cx="69" cy="248" rx="36" ry="5" fill={INK} opacity="0.1" />
+        <path d="M 22 250 Q 45 246 69 250 T 150 250" fill="none" stroke={INK} strokeWidth="1.4" opacity="0.18" />
+        <circle cx="30" cy="238" r="1.3" fill={INK} opacity="0.15" />
+        <circle cx="114" cy="243" r="1.1" fill={INK} opacity="0.15" />
+        <circle cx="50" cy="252" r="1" fill={INK} opacity="0.12" />
+        <circle cx="128" cy="233" r="1.2" fill={INK} opacity="0.13" />
+      </g>
+
       {/* ---- hardgoods, behind the rider ---- */}
       {sport === "snowboard" ? (
         <g {...line}>
@@ -1175,6 +1187,16 @@ function GearFigure({ colors, sport, pantFit = "regular" }) {
         <rect x="28" y="127" width="18" height="15" rx="6" fill={gloves || neutral} />
         <rect x="98" y="31" width="18" height="15" rx="6" fill={gloves || neutral} />
       </g>
+
+      {/* ---- ski pole: only the lower/forward hand carries one, matching
+              the single-pole convention already used by SkierMarker -
+              boarders don't carry poles, so skip it for snowboard ---- */}
+      {sport !== "snowboard" && (
+        <g>
+          <line x1="36" y1="133" x2="26" y2="249" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
+          <ellipse cx="26" cy="242" rx="5" ry="2" fill="none" stroke={INK} strokeWidth="1.6" />
+        </g>
+      )}
 
       {/* ---- collar, neck, head ---- */}
       <g {...line}>
@@ -2289,14 +2311,15 @@ export default function SlopeFit() {
                 return (
                   <div className="rounded-xl border border-white/18 bg-white/[0.03] py-6 flex flex-col items-center">
                     <GearFigure colors={resolvedColors} sport={sport} pantFit={pantFit} />
-                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-4 px-4">
+                    <div className="w-full max-w-[280px] mt-5 px-4 flex flex-col gap-2">
                       {Object.entries(setup).map(([category, item]) => {
                         if (!item || !resolvedColors[category]) return null;
                         return (
-                          <span key={category} className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-white/45 font-semibold">
+                          <div key={category} className="flex items-center gap-2.5 text-xs">
                             <span className="w-2.5 h-2.5 rounded-full border border-white/40 flex-shrink-0" style={{ backgroundColor: resolvedColors[category] }} />
-                            {categoryLabel(category, sport)}
-                          </span>
+                            <span className="text-white/40 uppercase tracking-wide text-[10px] font-semibold w-20 flex-shrink-0">{categoryLabel(category, sport)}</span>
+                            <span className="text-white/85 font-medium truncate">{item.brand} {item.name}</span>
+                          </div>
                         );
                       })}
                     </div>
