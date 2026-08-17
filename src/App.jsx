@@ -1488,6 +1488,22 @@ export default function SlopeFit() {
       </div>
 
       {phase === "intro" && (
+        <button
+          onClick={() => scrollToSection("how-it-works")}
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-30 flex items-center bg-black border border-white/25 border-r-0 rounded-l-lg px-2 py-4 hover:border-white/60 hover:bg-white/10 transition-colors"
+          style={{ writingMode: "vertical-rl" }}
+          aria-label="Jump to how we pick your gear"
+        >
+          <span
+            className="text-[11px] uppercase tracking-widest font-bold text-white/70 hover:text-white transition-colors"
+            style={{ transform: "rotate(180deg)" }}
+          >
+            How We Pick
+          </span>
+        </button>
+      )}
+
+      {phase === "intro" && (
         <div id="home" className="relative">
           <MountainHero sport={sport} />
           <div className="absolute inset-0 flex flex-col justify-end">
