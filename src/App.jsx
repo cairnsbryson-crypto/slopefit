@@ -145,7 +145,7 @@ const CONTACT_EMAIL = "cairnsbryson@gmail.com";
 
 /* Bump whenever the privacy or terms copy changes materially - the date
    shown on the legal page has to reflect the text actually on screen. */
-const LEGAL_UPDATED = "17 August 2026";
+const LEGAL_UPDATED = "18 August 2026";
 
 function buildShopLink(item, displayColorLabels) {
   const query = `${item.brand} ${item.name} ${displayColorLabels.join(" ")}`.trim();
@@ -2369,9 +2369,11 @@ export default function SlopeFit() {
               <div className="rounded-xl border border-white/15 bg-white/[0.05] p-5 mb-10 max-w-xl">
                 <p className="text-sm text-white/75 leading-relaxed">
                   <strong className="text-white">The short version:</strong> your quiz answers — including
-                  your height and weight — never leave your browser. There are no analytics, no tracking
-                  pixels and no advertising cookies anywhere on this site. The only personal information
-                  we ever receive is your email address, and only if you choose to sign in.
+                  your height and weight — never leave your browser. We run no analytics, no advertising
+                  network and no session recording. One third-party script does load: Skimlinks, which
+                  turns our "Shop" links into affiliate links and sets a cookie to record that a click
+                  came from here. The only personal information we ever receive is your email address,
+                  and only if you choose to sign in.
                 </p>
               </div>
 
@@ -2422,6 +2424,7 @@ export default function SlopeFit() {
                   {[
                     "Our host, Vercel, keeps standard server logs, which include IP addresses. That is ordinary web hosting, not analytics we run.",
                     "Product photographs are loaded directly from each brand's own servers rather than copied onto ours. That means the brand's image host can see your IP address and which image was requested — the same as if you visited their site. It also means we are showing you the brand's real photo rather than a stale copy.",
+                    "We use Skimlinks to earn a commission on gear you buy. Their script runs on every page, rewrites \"Shop\" links into affiliate links, and sets a cookie so a later purchase can be credited back to us. It can see which pages you view here and which product links you click, under Skimlinks' own privacy policy at skimlinks.com/privacy-policies. It is the only third-party script on the site, and blocking it costs you nothing — the links still work.",
                     "If a \"Shop\" link is an affiliate link, following it hands you to that retailer or affiliate network, which will set its own cookies under its own privacy policy. We receive no personal information back — at most an anonymous record that a sale occurred.",
                   ].map((t) => (
                     <li key={t} className="flex gap-3 items-start">
@@ -2434,9 +2437,10 @@ export default function SlopeFit() {
 
               <AboutSection n="04" title="What we don't do">
                 <p>
-                  We do not sell, rent or share your personal information. We do not run advertising
-                  networks, analytics packages, session recorders or tracking pixels. We do not build a
-                  profile of you, and we do not email you anything except the sign-in link you asked for.
+                  We do not sell, rent or share your personal information. Apart from the Skimlinks
+                  affiliate script described above, we run no advertising networks, analytics packages,
+                  session recorders or tracking pixels. We do not build a profile of you, and we do not
+                  email you anything except the sign-in link you asked for.
                 </p>
               </AboutSection>
 
