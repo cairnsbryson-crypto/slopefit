@@ -20,9 +20,15 @@ Every one of these has been found in this catalog and shipped to users:
 - Products the named brand does not make and never made
 - A board discontinued six years earlier, still listed as current
 - A brand reselling AliExpress goods under the supplier's own photos
+- Two brands selling the identical blank under different logos, so the
+  quiz could recommend the same garment twice at two prices
 - Colour tags invented from marketing names — a solid **red** ski listed
   as `charcoal, black`, a **pink** board listed as `forest`
+- A **red** pant shown on an entry tagged dark green, because the brand
+  uses one photo across two colourways
 - Prices stale by up to 40% against the brand's own current listing
+- Prices in the wrong currency entirely — CAD and AUD sticker numbers
+  entered as USD, leaving 21 items 20–24% too expensive
 
 None of it was obvious by reading the catalog. All of it was obvious
 the moment the entry was checked against the brand's live data. That
@@ -40,7 +46,12 @@ nearest thing and report success.
 `content-type` of `image/*`. A 200 returning HTML is a soft-404 and
 counts as broken.
 
-**3. The colour tags match the photograph** — not the colourway name.
+**3. The colour tags match the photograph** — not the colourway name,
+and not the trim. GSOU's "Magenta Contrast Stitch Minimal Snow Pants"
+are **black** pants with magenta thread; the SKU is `upt2650-blk-3` and
+the colour options read "Magenta Stitch / White Stitch / Green Stitch".
+When the name and the SKU disagree, the SKU is right.
+
 Download the image and measure it:
 
 ```
@@ -58,11 +69,54 @@ for cnt, idx in sorted(q.getcolors(), reverse=True)[:4]:
 
 Drop near-white pixels first or the studio background dominates. Map the
 result to the nearest entry in the `COLORS` palette at the top of
-`src/App.jsx`. Names lie routinely: "Atomic Mint" is teal, "Flood Blue"
-is cobalt, "Dark Horse" is pink.
+`src/App.jsx`, comparing in CIE Lab rather than raw RGB. Names lie
+routinely: "Atomic Mint" is teal, "Flood Blue" is cobalt, "Dark Horse"
+is pink.
+
+Measurement picks the candidates; a human read decides. Model shots,
+outdoor backgrounds and coloured studio backdrops all score badly while
+the garment is perfectly correct, so review the worst offenders as
+images before calling any of them wrong.
+
+**A brand may use one photo for several colourways.** Ninety Roll leads
+both its dark green and its red product page with the same red pant, so
+"take the first image from the correct product page" silently gives the
+wrong colour. When a filename matches more than one product, do not let
+first-match win — disambiguate on something that actually encodes the
+colour (the SKU token, the colourway in the title) and check the other
+images on the page, where the right shot usually sits second.
 
 **4. The price is current** against the brand's listing, in USD. The
-catalog stores USD; the UI converts at display time.
+catalog stores USD; the UI converts at display time. Two rules, both
+learned the hard way:
+
+**Read the currency, never just the number.** Bandits Apparels prices in
+CAD and Yuki Threads in AUD. Their sticker numbers went into the catalog
+as USD and left 21 items 20–24% overpriced — and Canadian visitors saw
+the error twice over, because a CAD figure was then converted to CAD
+again. Check `https://<domain>/meta.json` for `currency`, and prefer a
+store's own US pricing over any conversion you do yourself:
+
+```
+curl -s "https://<domain>/products/<handle>.json?country=US"
+```
+
+That returns the real dollar price a US buyer pays, which is what the
+catalog wants. It works on Shopify stores even when the shop currency is
+something else — Faction quotes €419 in its feed and $475 to a US buyer.
+
+Beware the inverse: a store's declared currency can simply be wrong.
+`hestragloves.us` reports SEK while listing a Gore-Tex Atlas Jr mitt at
+`90` — dollars, obviously, not kronor. Sanity-check against what the
+item plausibly costs before "correcting" anything.
+
+**Never scrape a price out of page HTML by pattern matching.** Grabbing
+the first plausible number gave $360 for an $1,150 Fischer ski and $350
+for a $150 Giro goggle, and read Beyond Medals' CAD as USD. Use a
+structured source — the Shopify product JSON, a WooCommerce store API
+(`/wp-json/wc/store/v1/products`), or a real JSON-LD `Product` offer
+with its `priceCurrency`. If none exists, report "could not verify"
+rather than a number you cannot stand behind.
 
 **5. The brand makes its own product.** See the dropship check below.
 
@@ -109,6 +163,26 @@ The tell is the brand hosting the supplier's own photography:
 
 Report the proportion — "14 of 60 images across 9 products" is far more
 useful than "some images look sourced".
+
+## The rebadge check
+
+Separate from dropshipping: two brands can sell the same white-label
+blank under their own logos, each shooting its own photography. The
+images are not byte-identical, so the AliExpress test above finds
+nothing. Briqed and Solo Apparel were caught this way — identical cut,
+identical cargo pocket placement, same cuff and drawstring, the same six
+colourways, $15 apart.
+
+The tells, in order of strength:
+
+- The colourway sets match one for one across both brands
+- Same category, same fit, same tier, prices within ~15%
+- Laid side by side, the garments differ only in the printed wordmark
+
+Build the comparison and look at it — measurements will not settle this,
+and neither will product names. When two brands overlap this way, say so
+plainly: carrying both lets the quiz hand a user the same garment twice
+under two names, and "search again" returns what they just rejected.
 
 ## Discontinued products
 
