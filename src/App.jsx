@@ -1465,19 +1465,24 @@ export default function SlopeFit() {
   // instead of dumping them at sport-select - clicking a sign-in link
   // shouldn't undo their progress through the app.
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Runs from both entry points below. Clicking a magic link lands here
+    // with the code still in the URL, and the client exchanges it
+    // asynchronously - so getSession() alone resolves with no session yet
+    // and the restore never fires, dumping the user back at sport-select.
+    // Whichever path sees the session first wins; the flag is cleared on
+    // use, so the other one finds nothing and does nothing.
+    const restore = (session) => {
       setUser(session?.user ?? null);
-      if (session?.user && localStorage.getItem("slopefit_return_to_premium")) {
-        const savedSport = localStorage.getItem("slopefit_sport");
-        if (savedSport) setSport(savedSport);
-        setPhase("premium");
-        localStorage.removeItem("slopefit_return_to_premium");
-        localStorage.removeItem("slopefit_sport");
-      }
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+      if (!session?.user) return;
+      if (!localStorage.getItem("slopefit_return_to_premium")) return;
+      const savedSport = localStorage.getItem("slopefit_sport");
+      if (savedSport) setSport(savedSport);
+      setPhase("premium");
+      localStorage.removeItem("slopefit_return_to_premium");
+      localStorage.removeItem("slopefit_sport");
+    };
+    supabase.auth.getSession().then(({ data: { session } }) => restore(session));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => restore(session));
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -1518,7 +1523,13 @@ export default function SlopeFit() {
     setAuthStatus("sending");
     localStorage.setItem("slopefit_return_to_premium", "true");
     if (sport) localStorage.setItem("slopefit_sport", sport);
-    const { error } = await supabase.auth.signInWithOtp({ email: authEmail });
+    // Send them back to the host they actually started on. Without this the
+    // link uses whatever Site URL is configured in Supabase, which is easy to
+    // leave pointing at an old deployment after a domain change.
+    const { error } = await supabase.auth.signInWithOtp({
+      email: authEmail,
+      options: { emailRedirectTo: window.location.origin },
+    });
     setAuthStatus(error ? "error" : "sent");
   }
 
