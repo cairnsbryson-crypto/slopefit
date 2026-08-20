@@ -7,10 +7,6 @@ import {
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
-const FONT_IMPORT = `
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-`;
-
 /* ---------------------------------------------------------
    SIGN-IN COOLDOWN — a client-side UX throttle only. This does
    NOT stop abuse on its own: it's plain localStorage, so clearing
@@ -1236,7 +1232,7 @@ function AboutSection({ n, title, children }) {
     <section className="mb-11">
       <div className="flex items-baseline gap-3 mb-3">
         <span className="text-xs font-bold tracking-[0.2em] text-white/30 tabular-nums">{n}</span>
-        <h2 className="font-['Barlow_Condensed'] font-bold text-2xl uppercase tracking-wide leading-none">{title}</h2>
+        <h2 className="font-display font-bold text-2xl uppercase tracking-wide leading-none">{title}</h2>
       </div>
       <div className="pl-0 sm:pl-9 max-w-xl text-sm text-white/60 leading-relaxed space-y-3.5">{children}</div>
     </section>
@@ -1394,7 +1390,7 @@ function OptionCard({ selected, onClick, title, desc, icon: Icon, iconFilled, fi
         </span>
       )}
       <span className="flex-1">
-        <span className={`block font-['Barlow_Condensed'] font-bold text-lg tracking-wide uppercase ${selected ? "text-black" : "text-white"}`}>{title}</span>
+        <span className={`block font-display font-bold text-lg tracking-wide uppercase ${selected ? "text-black" : "text-white"}`}>{title}</span>
         {desc && <span className={`block text-sm mt-0.5 leading-snug ${selected ? "text-black/70" : "text-white/60"}`}>{desc}</span>}
       </span>
       {selected && <span className="flex-shrink-0 mt-1"><Check size={18} color="#000000" strokeWidth={3} /></span>}
@@ -1658,15 +1654,14 @@ export default function SlopeFit() {
   if (phase === "sport-select") {
     return (
       <div className="relative min-h-screen w-full text-white flex flex-col items-center justify-center px-6" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
-        <style>{FONT_IMPORT}</style>
         <MountainField />
         <SnowFall />
         <div className="relative flex items-center gap-2 mb-10">
           <Mountain size={26} color="#FFFFFF" strokeWidth={2.6} />
-          <span className="font-['Barlow_Condensed'] font-black text-2xl tracking-wide uppercase">SlopeFit</span>
+          <span className="font-display font-black text-2xl tracking-wide uppercase">SlopeFit</span>
         </div>
         <p className="relative text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Before we start</p>
-        <h1 className="relative font-['Barlow_Condensed'] font-black text-4xl sm:text-5xl uppercase tracking-tight text-center mb-10 leading-[0.95]">
+        <h1 className="relative font-display font-black text-4xl sm:text-5xl uppercase tracking-tight text-center mb-10 leading-[0.95]">
           What are you<br />riding this season?
         </h1>
         <div className="relative grid sm:grid-cols-2 gap-4 w-full max-w-md">
@@ -1677,7 +1672,7 @@ export default function SlopeFit() {
             <span className="text-white group-hover:text-black transition-colors">
               <SkiIcon size={34} />
             </span>
-            <span className="font-['Barlow_Condensed'] font-black text-xl uppercase tracking-wide group-hover:text-black">Ski</span>
+            <span className="font-display font-black text-xl uppercase tracking-wide group-hover:text-black">Ski</span>
             <span className="text-xs text-white/45 group-hover:text-black/60">Skis and a full coordinated kit</span>
           </button>
           <button
@@ -1687,7 +1682,7 @@ export default function SlopeFit() {
             <span className="text-white group-hover:text-black transition-colors">
               <SnowboardIcon size={34} />
             </span>
-            <span className="font-['Barlow_Condensed'] font-black text-xl uppercase tracking-wide group-hover:text-black">Snowboard</span>
+            <span className="font-display font-black text-xl uppercase tracking-wide group-hover:text-black">Snowboard</span>
             <span className="text-xs text-white/45 group-hover:text-black/60">Board and a full coordinated kit</span>
           </button>
         </div>
@@ -1700,7 +1695,6 @@ export default function SlopeFit() {
 
   return (
     <div className="relative min-h-screen w-full text-white" style={{ fontFamily: "'IBM Plex Sans', sans-serif" }}>
-      <style>{FONT_IMPORT}</style>
       <style>{`
         @keyframes slopefitIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         button:focus-visible, a:focus-visible, input:focus-visible {
@@ -1716,7 +1710,7 @@ export default function SlopeFit() {
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <button onClick={restart} className="flex items-center gap-2 flex-shrink-0 group" aria-label="Return to SlopeFit home">
             <Mountain size={22} color="#FFFFFF" strokeWidth={2.6} className="group-hover:scale-110 transition-transform" />
-            <span className="font-['Barlow_Condensed'] font-black text-xl tracking-wide uppercase">SlopeFit</span>
+            <span className="font-display font-black text-xl tracking-wide uppercase">SlopeFit</span>
           </button>
 
           <div className="relative flex-shrink-0">
@@ -1796,7 +1790,7 @@ export default function SlopeFit() {
           <div className="absolute inset-0 flex flex-col justify-end">
             <div className="max-w-3xl mx-auto px-6 pb-9 w-full">
               <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">{sport === "snowboard" ? "Eight questions" : "Seven questions"}. One coordinated setup.</p>
-              <h1 className="font-['Barlow_Condensed'] font-black text-5xl sm:text-6xl leading-[0.95] uppercase tracking-tight text-white">Find your<br />perfect line.</h1>
+              <h1 className="font-display font-black text-5xl sm:text-6xl leading-[0.95] uppercase tracking-tight text-white">Find your<br />perfect line.</h1>
             </div>
           </div>
         </div>
@@ -1810,7 +1804,7 @@ export default function SlopeFit() {
                 A quick style-and-fit quiz that turns your answers into a complete, color-matched{" "}
                 {sport === "snowboard" ? "snowboard setup — board to gloves" : "ski setup — skis to gloves"} — ready to shop.
               </p>
-              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-display font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
                 Start the fit check <ChevronRight size={20} />
               </button>
 
@@ -1823,7 +1817,7 @@ export default function SlopeFit() {
 
             <div id="how-it-works" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">How it works</p>
-              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-6">Three steps to your setup.</h2>
+              <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-6">Three steps to your setup.</h2>
               <div className="grid sm:grid-cols-3 gap-4">
                 {HOW_IT_WORKS.map((step, i) => (
                   <div key={step.title} className="rounded-xl border border-white/16 bg-white/[0.04] p-5 hover:border-white/30 transition-colors">
@@ -1831,7 +1825,7 @@ export default function SlopeFit() {
                       <step.icon size={20} color="#FFFFFF" strokeWidth={2.2} />
                       <span className="text-xs font-bold text-white/35">0{i + 1}</span>
                     </div>
-                    <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase tracking-wide mb-1">{step.title.includes("questions") && sport === "snowboard" ? "Answer eight questions" : step.title}</h3>
+                    <h3 className="font-display font-bold text-lg uppercase tracking-wide mb-1">{step.title.includes("questions") && sport === "snowboard" ? "Answer eight questions" : step.title}</h3>
                     <p className="text-sm text-white/55 leading-relaxed">
                       {i === 0 && sport === "snowboard"
                         ? "Gender, ability, stance, terrain, style, build, colors, budget — under a minute."
@@ -1844,12 +1838,12 @@ export default function SlopeFit() {
 
             <div id="features" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">What you get</p>
-              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-6">Six pieces, one look.</h2>
+              <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-6">Six pieces, one look.</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {GEAR_PREVIEW.map((g) => (
                   <div key={g.label} className="rounded-xl border border-white/16 bg-white/[0.04] p-4 flex flex-col items-start gap-2 hover:border-white/30 hover:bg-white/[0.07] transition-colors">
                     <g.icon size={20} color="#FFFFFF" strokeWidth={2.2} />
-                    <span className="font-['Barlow_Condensed'] font-bold text-sm uppercase tracking-wide">{g.label === "Skis" ? categoryLabel("skis", sport) : g.label}</span>
+                    <span className="font-display font-bold text-sm uppercase tracking-wide">{g.label === "Skis" ? categoryLabel("skis", sport) : g.label}</span>
                   </div>
                 ))}
               </div>
@@ -1857,17 +1851,17 @@ export default function SlopeFit() {
 
             <div id="why" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Why SlopeFit</p>
-              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-6">Built to actually match.</h2>
+              <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-6">Built to actually match.</h2>
               <div className="grid sm:grid-cols-3 gap-4 mb-8">
                 {WHY_ITEMS.map((w) => (
                   <div key={w.title} className="rounded-xl border border-white/16 bg-white/[0.04] p-5 hover:border-white/30 transition-colors">
                     <w.icon size={22} color="#FFFFFF" strokeWidth={2.2} className="mb-3" />
-                    <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase tracking-wide mb-1">{w.title}</h3>
+                    <h3 className="font-display font-bold text-lg uppercase tracking-wide mb-1">{w.title}</h3>
                     <p className="text-sm text-white/55 leading-relaxed">{w.desc}</p>
                   </div>
                 ))}
               </div>
-              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-display font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
                 Start the fit check <ChevronRight size={20} />
               </button>
             </div>
@@ -1880,7 +1874,7 @@ export default function SlopeFit() {
               <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Mountain size={16} color="#FFFFFF" strokeWidth={2.6} opacity={0.6} />
-                  <span className="font-['Barlow_Condensed'] font-bold text-sm tracking-wide uppercase text-white/60">SlopeFit</span>
+                  <span className="font-display font-bold text-sm tracking-wide uppercase text-white/60">SlopeFit</span>
                 </div>
                 <button
                   onClick={() => setPhase("sport-select")}
@@ -1922,7 +1916,7 @@ export default function SlopeFit() {
 
             {currentKey === "gender" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">Who are we kitting out?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">Who are we kitting out?</h2>
                 <p className="text-sm text-white/50 mb-6">Sets which cuts and sizing we pull from — so you never get sent the wrong fit.</p>
                 <div className="grid gap-3">
                   {GENDERS.map((g) => (<OptionCard key={g.id} selected={answers.gender === g.id} onClick={() => selectAnswer("gender", g.id)} title={g.label} desc={g.desc} icon={g.icon} />))}
@@ -1932,7 +1926,7 @@ export default function SlopeFit() {
 
             {currentKey === "ability" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">Where's your ability at?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">Where's your ability at?</h2>
                 <p className="text-sm text-white/50 mb-6">Rated the way runs are, on the mountain. Pick one.</p>
                 <div className="grid gap-3">
                   {ABILITY.map((a) => (<OptionCard key={a.id} selected={answers.ability === a.id} onClick={() => selectAnswer("ability", a.id)} title={a.label} desc={a.desc} icon={a.icon} iconFilled={a.filled} fillOpacity={a.fillOpacity} double={a.double} />))}
@@ -1942,7 +1936,7 @@ export default function SlopeFit() {
 
             {currentKey === "stance" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">What's your stance?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">What's your stance?</h2>
                 <p className="text-sm text-white/50 mb-6">Which foot leads down the hill.</p>
                 <div className="grid gap-3">
                   {STANCE.map((s) => (<OptionCard key={s.id} selected={answers.stance === s.id} onClick={() => selectAnswer("stance", s.id)} title={s.label} desc={s.desc} />))}
@@ -1952,7 +1946,7 @@ export default function SlopeFit() {
 
             {currentKey === "terrain" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">What terrain do you chase?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">What terrain do you chase?</h2>
                 <p className="text-sm text-white/50 mb-6">Pick as many as you like — we'll balance your setup across them.</p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {TERRAIN.map((t) => (<OptionCard key={t.id} selected={(answers.terrain || []).includes(t.id)} onClick={() => toggleAnswer("terrain", t.id)} title={t.label} desc={t.desc} icon={t.icon} />))}
@@ -1962,7 +1956,7 @@ export default function SlopeFit() {
 
             {currentKey === "style" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">What's your look?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">What's your look?</h2>
                 <p className="text-sm text-white/50 mb-6">Choose one or blend a few styles together.</p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {STYLE.map((s) => (<OptionCard key={s.id} selected={(answers.style || []).includes(s.id)} onClick={() => toggleAnswer("style", s.id)} title={s.label} desc={s.desc} />))}
@@ -1972,7 +1966,7 @@ export default function SlopeFit() {
 
             {currentKey === "fit" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">What's your build?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">What's your build?</h2>
                 <p className="text-sm text-white/50 mb-6">
                   {sport === "snowboard"
                     ? "Height and weight size your board length."
@@ -2003,11 +1997,11 @@ export default function SlopeFit() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
                       <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Ruler size={15} /> Height (cm)</span>
-                      <input type="number" inputMode="numeric" min={100} max={230} placeholder="e.g. 175" value={answers.heightCm ?? ""} onChange={(e) => updateMeasure("heightCm", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                      <input type="number" inputMode="numeric" min={100} max={230} placeholder="e.g. 175" value={answers.heightCm ?? ""} onChange={(e) => updateMeasure("heightCm", e.target.value)} className="bg-transparent text-white text-2xl font-display font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
                     </label>
                     <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
                       <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Shirt size={15} /> Weight (kg)</span>
-                      <input type="number" inputMode="numeric" min={30} max={200} placeholder="e.g. 72" value={answers.weightKg ?? ""} onChange={(e) => updateMeasure("weightKg", e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                      <input type="number" inputMode="numeric" min={30} max={200} placeholder="e.g. 72" value={answers.weightKg ?? ""} onChange={(e) => updateMeasure("weightKg", e.target.value)} className="bg-transparent text-white text-2xl font-display font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
                     </label>
                   </div>
                 ) : (
@@ -2016,11 +2010,11 @@ export default function SlopeFit() {
                       <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Ruler size={15} /> Height</span>
                       <div className="flex items-end gap-3">
                         <div className="flex-1">
-                          <input type="number" inputMode="numeric" min={3} max={7} placeholder="5" value={feet} onChange={(e) => setFeet(e.target.value)} className="w-full bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                          <input type="number" inputMode="numeric" min={3} max={7} placeholder="5" value={feet} onChange={(e) => setFeet(e.target.value)} className="w-full bg-transparent text-white text-2xl font-display font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
                           <span className="text-[10px] uppercase tracking-widest text-white/35 font-semibold">ft</span>
                         </div>
                         <div className="flex-1">
-                          <input type="number" inputMode="numeric" min={0} max={11} placeholder="9" value={inches} onChange={(e) => setInches(e.target.value)} className="w-full bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                          <input type="number" inputMode="numeric" min={0} max={11} placeholder="9" value={inches} onChange={(e) => setInches(e.target.value)} className="w-full bg-transparent text-white text-2xl font-display font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
                           <span className="text-[10px] uppercase tracking-widest text-white/35 font-semibold">in</span>
                         </div>
                       </div>
@@ -2028,7 +2022,7 @@ export default function SlopeFit() {
                     </div>
                     <label className="rounded-xl border border-white/18 bg-white/[0.04] p-5 flex flex-col gap-2 focus-within:border-white/60 transition-colors">
                       <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50 font-semibold"><Shirt size={15} /> Weight (lb)</span>
-                      <input type="number" inputMode="numeric" min={66} max={440} placeholder="e.g. 160" value={pounds} onChange={(e) => setPounds(e.target.value)} className="bg-transparent text-white text-2xl font-['Barlow_Condensed'] font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
+                      <input type="number" inputMode="numeric" min={66} max={440} placeholder="e.g. 160" value={pounds} onChange={(e) => setPounds(e.target.value)} className="bg-transparent text-white text-2xl font-display font-bold outline-none placeholder-white/25 border-b border-white/20 focus:border-white pb-1 transition-colors" />
                       {answers.weightKg && <span className="text-[11px] text-white/35">= {answers.weightKg} kg</span>}
                     </label>
                   </div>
@@ -2039,7 +2033,7 @@ export default function SlopeFit() {
 
             {currentKey === "colors" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">Build your colorway.</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">Build your colorway.</h2>
                 <p className="text-sm text-white/50 mb-5">
                   Pick up to {MAX_COLORS} colors and every piece gets matched to them. Lights, darks, and brights all in play.
                 </p>
@@ -2077,7 +2071,7 @@ export default function SlopeFit() {
 
             {currentKey === "budget" && (
               <div>
-                <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-wide mb-1">What's your budget?</h2>
+                <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">What's your budget?</h2>
                 <p className="text-sm text-white/50 mb-6">Total across all six pieces.</p>
                 <div className="grid gap-3">
                   {BUDGETS.map((b) => {
@@ -2096,7 +2090,7 @@ export default function SlopeFit() {
               <button onClick={back} disabled={stepIndex === 0} className={`flex items-center gap-1 text-sm font-semibold uppercase tracking-wide transition-colors ${stepIndex === 0 ? "text-white/20 cursor-not-allowed" : "text-white/60 hover:text-white"}`}>
                 <ChevronLeft size={18} /> Back
               </button>
-              <button onClick={next} disabled={!canAdvance} className={`flex items-center gap-1 font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-lg px-7 py-3 rounded-lg transition-all ${canAdvance ? "bg-white text-black hover:bg-white/85 hover:-translate-y-0.5" : "bg-white/10 text-white/30 cursor-not-allowed"}`}>
+              <button onClick={next} disabled={!canAdvance} className={`flex items-center gap-1 font-display font-bold uppercase tracking-wide text-lg px-7 py-3 rounded-lg transition-all ${canAdvance ? "bg-white text-black hover:bg-white/85 hover:-translate-y-0.5" : "bg-white/10 text-white/30 cursor-not-allowed"}`}>
                 {stepIndex === STEPS.length - 1 ? "See my setup" : "Next"} <ChevronRight size={20} />
               </button>
             </div>
@@ -2107,7 +2101,7 @@ export default function SlopeFit() {
           <div style={{ animation: "slopefitIn 0.4s ease" }}>
             <RidgeDivider opacity={0.6} height={10} />
             <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mt-4 mb-3">Your coordinated setup</p>
-            <h2 className="font-['Barlow_Condensed'] font-black text-4xl uppercase tracking-tight mb-2">Ready to ride.</h2>
+            <h2 className="font-display font-black text-4xl uppercase tracking-tight mb-2">Ready to ride.</h2>
             <p className="text-sm text-white/45 mb-5">
               {[
                 answers.gender && GENDER_LABELS[answers.gender],
@@ -2199,14 +2193,14 @@ export default function SlopeFit() {
                                 <span className="text-[10px] uppercase tracking-widest text-white/50 font-bold">{pct}% match</span>
                               </div>
                               <p className="text-xs uppercase tracking-wide text-white/45 font-semibold">{opt.brand}</p>
-                              <p className="font-['Barlow_Condensed'] font-bold text-base leading-tight">{opt.name}</p>
+                              <p className="font-display font-bold text-base leading-tight">{opt.name}</p>
                               <div className="flex items-center gap-1.5">
                                 {swatches.map((cid) => {
                                   const c = colorById[cid];
                                   return c ? <span key={cid} title={c.label} className="w-4 h-4 rounded-full border border-white/30" style={{ backgroundColor: c.hex }} /> : null;
                                 })}
                               </div>
-                              <p className="font-['Barlow_Condensed'] font-bold text-lg mt-auto">{formatPrice(opt.price, currency)}</p>
+                              <p className="font-display font-bold text-lg mt-auto">{formatPrice(opt.price, currency)}</p>
                               {!isCurrent && (
                                 <button
                                   onClick={() => setPicks((p) => ({ ...p, [category]: list.indexOf(opt) }))}
@@ -2244,7 +2238,7 @@ export default function SlopeFit() {
                           {categoryLabel(category, sport)}
                           {item.gender.length === 1 ? ` · ${GENDER_LABELS[item.gender[0]]}` : " · Unisex"}
                         </span>
-                        <h3 className="font-['Barlow_Condensed'] font-bold text-xl uppercase tracking-wide leading-tight mt-1">{item.name}</h3>
+                        <h3 className="font-display font-bold text-xl uppercase tracking-wide leading-tight mt-1">{item.name}</h3>
                         <p className="text-sm text-white/50">{item.brand}</p>
                         {(item.fit || item.shell) && (
                           <p className="text-xs text-white/35 mt-1">
@@ -2372,11 +2366,11 @@ export default function SlopeFit() {
             </button>
 
             <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Legal</p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-3 leading-[0.95]">Privacy<br />and terms</h1>
+            <h1 className="font-display font-black text-5xl uppercase tracking-tight mb-3 leading-[0.95]">Privacy<br />and terms</h1>
             <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-8">Last updated {LEGAL_UPDATED}</p>
 
             <div className="rounded-2xl border border-white/12 bg-black/80 p-6 sm:p-8 mb-8">
-              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5">Privacy</h2>
+              <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-5">Privacy</h2>
               <div className="rounded-xl border border-white/15 bg-white/[0.05] p-5 mb-10 max-w-xl">
                 <p className="text-sm text-white/75 leading-relaxed">
                   <strong className="text-white">The short version:</strong> your quiz answers — including
@@ -2467,7 +2461,7 @@ export default function SlopeFit() {
                 </p>
               </AboutSection>
 
-              <h2 className="font-['Barlow_Condensed'] font-black text-3xl uppercase tracking-tight mb-5 mt-14 pt-10 border-t border-white/12">Terms of use</h2>
+              <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-5 mt-14 pt-10 border-t border-white/12">Terms of use</h2>
 
               <AboutSection n="06" title="What SlopeFit is">
                 <p>
@@ -2551,7 +2545,7 @@ export default function SlopeFit() {
             </button>
 
             <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">About</p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-4 leading-[0.95]">How SlopeFit<br />picks your gear</h1>
+            <h1 className="font-display font-black text-5xl uppercase tracking-tight mb-4 leading-[0.95]">How SlopeFit<br />picks your gear</h1>
             {/* Long-form prose needs a scrim. The mountain art sits behind
                 every phase, and unlike the card-based screens this page puts
                 body text straight onto it - the ridge lines cut through
@@ -2696,7 +2690,7 @@ export default function SlopeFit() {
             </button>
 
             <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">Go further with</p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl uppercase tracking-tight mb-4">SlopeFit Premium</h1>
+            <h1 className="font-display font-black text-5xl uppercase tracking-tight mb-4">SlopeFit Premium</h1>
             <p className="text-base text-white/55 max-w-md mb-6 leading-relaxed">
               Everything in the free fit check, plus the tools to actually dial in and save your setup.
             </p>
@@ -2768,13 +2762,13 @@ export default function SlopeFit() {
                   )}
                   <span className="text-xs uppercase tracking-widest text-white/50 font-semibold">{plan.label}</span>
                   <span className="flex items-end gap-1 mt-1">
-                    <span className="font-['Barlow_Condensed'] font-black text-4xl">{formatPrice(plan.usd, currency)}</span>
+                    <span className="font-display font-black text-4xl">{formatPrice(plan.usd, currency)}</span>
                     <span className="text-white/50 text-sm mb-1">{plan.period}</span>
                   </span>
                   <span className="text-xs text-white/40 mt-1">{plan.note}</span>
                   <button
                     onClick={() => setClickedPlan(plan.id)}
-                    className="mt-5 bg-white text-black font-['Barlow_Condensed'] font-bold uppercase tracking-wide text-base py-3 rounded-lg hover:bg-white/85 transition-colors disabled:opacity-60"
+                    className="mt-5 bg-white text-black font-display font-bold uppercase tracking-wide text-base py-3 rounded-lg hover:bg-white/85 transition-colors disabled:opacity-60"
                     disabled={clickedPlan === plan.id}
                   >
                     {clickedPlan === plan.id ? "Thanks — noted!" : `Get ${plan.label}`}
@@ -2794,7 +2788,7 @@ export default function SlopeFit() {
                 <div key={f.title} className="rounded-xl border border-white/16 bg-white/[0.04] p-5 flex items-start gap-3.5">
                   <Check size={18} strokeWidth={3} color="#FFFFFF" className="mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase tracking-wide leading-tight mb-1">{f.title}</h3>
+                    <h3 className="font-display font-bold text-lg uppercase tracking-wide leading-tight mb-1">{f.title}</h3>
                     <p className="text-sm text-white/55 leading-relaxed">{f.desc}</p>
                   </div>
                 </div>

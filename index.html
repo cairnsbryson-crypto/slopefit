@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Fonts are requested here rather than from an @import inside a <style>
+         tag in the app, because that only got discovered once React had
+         rendered - so every visitor saw the fallback face first. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+    />
     <title>SlopeFit — Find Your Perfect Line</title>
     <meta name="description" content="Answer a few questions about your ability, terrain, and style, and get a complete color-matched ski or snowboard setup — real gear, real brands, ready to shop." />
     <link rel="canonical" href="https://www.slopefit.co/" />
