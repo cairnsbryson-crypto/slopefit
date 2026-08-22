@@ -1893,10 +1893,10 @@ export default function SlopeFit() {
                     description for search. Linking to them from here is also
                     how a crawler finds them in the first place. */}
                 <a
-                  href="/guides/snowboard-length"
+                  href="/guides"
                   className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
                 >
-                  Sizing guide
+                  Guides
                 </a>
                 <button
                   onClick={goToLegal}
