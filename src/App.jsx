@@ -635,7 +635,13 @@ function matchPercent(item, category, answers, fit, pantFit) {
 }
 
 const TERRAIN_LENGTH_OFFSET = { groomed: -18, ice: -16, moguls: -20, park: -24, powder: -8, backcountry: -6 };
-const ABILITY_LENGTH_ADJ = { beginner: -6, intermediate: -2, advanced: 2, expert: 6 };
+/* Ski length reads best against your own body, and the shop-floor rule is
+   chin for a beginner up to the top of your head for an expert. Combined
+   with the groomed terrain offset of -18, these land a groomed skier at
+   roughly: beginner chin, intermediate mouth, advanced forehead, expert
+   their own height. The previous values (-6/-2/+2/+6) put everyone at
+   chin height or below, which is too short for anyone past beginner. */
+const ABILITY_LENGTH_ADJ = { beginner: 0, intermediate: 6, advanced: 12, expert: 18 };
 
 function recommendSkiLength(heightCm, weightKg, ability, terrainArr) {
   if (!heightCm) return null;
