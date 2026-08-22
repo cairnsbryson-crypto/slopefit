@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
+
+  "//": "Guides get clean URLs via an explicit rewrite rather than the global cleanUrls flag. cleanUrls strips .html everywhere, which would 308 Google's site-verification file at /google<token>.html - and Search Console checks that exact URL for a 200.",
+
+  "rewrites": [{ "source": "/guides/:slug", "destination": "/guides/:slug.html" }],
   "trailingSlash": false
 }
