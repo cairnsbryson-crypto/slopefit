@@ -2276,6 +2276,23 @@ export default function SlopeFit() {
                       )}
                     </div>
 
+                    {/* The recommended length is also a chip at the top of the
+                        results, but by the time someone has scrolled to the
+                        board and is about to hit Shop it is off-screen - and
+                        the brand's page opens on a size dropdown with nothing
+                        to go on. Repeat it where the decision actually gets
+                        made. Lengths come in fixed steps, so say "closest to"
+                        rather than implying the exact number will be listed. */}
+                    {category === "skis" && (skiLength || boardLength) && (
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-white/70 border border-white/20 rounded-lg px-3 py-2 mb-2 leading-relaxed">
+                        Pick the length closest to{" "}
+                        <span className="text-white">{sport === "snowboard" ? boardLength : skiLength}cm</span>
+                        <span className="block normal-case tracking-normal font-medium text-white/45 mt-0.5">
+                          Sizes vary by brand — go a little shorter for park, longer for powder.
+                        </span>
+                      </p>
+                    )}
+
                     <div className="mt-auto flex gap-2">
                       <a href={buildShopLink(item, displayColors.map((cid) => colorById[cid]?.label).filter(Boolean))} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-white border border-white/40 rounded-lg py-2 hover:bg-white hover:text-black transition-colors">
                         <ShoppingBag size={15} /> Shop
