@@ -2293,6 +2293,20 @@ export default function SlopeFit() {
                       </p>
                     )}
 
+                    {/* Same reasoning as the length above: the size is worked out
+                        for you but only appeared in the chip row at the top.
+                        Jacket and pants only - recommendSize() keys off height
+                        and BMI, which says nothing useful about a glove (hand)
+                        or a helmet (head circumference). */}
+                    {(category === "jacket" || category === "pants") && size && (
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-white/70 border border-white/20 rounded-lg px-3 py-2 mb-2 leading-relaxed">
+                        Your size: <span className="text-white">{size}</span>
+                        <span className="block normal-case tracking-normal font-medium text-white/45 mt-0.5">
+                          Based on your height and build. Check the brand's own size chart — they vary a lot.
+                        </span>
+                      </p>
+                    )}
+
                     <div className="mt-auto flex gap-2">
                       <a href={buildShopLink(item, displayColors.map((cid) => colorById[cid]?.label).filter(Boolean))} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-white border border-white/40 rounded-lg py-2 hover:bg-white hover:text-black transition-colors">
                         <ShoppingBag size={15} /> Shop
