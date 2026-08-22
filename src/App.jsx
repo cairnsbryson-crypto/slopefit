@@ -1888,6 +1888,16 @@ export default function SlopeFit() {
                 >
                   How we pick
                 </button>
+                {/* A real link, not a phase change - the guides are standalone
+                    pages under /guides so they have their own URL, title and
+                    description for search. Linking to them from here is also
+                    how a crawler finds them in the first place. */}
+                <a
+                  href="/guides/snowboard-length"
+                  className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Sizing guide
+                </a>
                 <button
                   onClick={goToLegal}
                   className="text-xs uppercase tracking-widest font-semibold text-white/50 hover:text-white transition-colors whitespace-nowrap"
