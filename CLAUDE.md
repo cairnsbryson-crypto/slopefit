@@ -29,7 +29,7 @@ guide means: a new file in `public/guides/`, a `<url>` block in
 
 ## The catalog
 
-Roughly 235 products, ~47 brands, all in `src/App.jsx`. Every entry is verified
+Roughly 234 products, ~47 brands, all in `src/App.jsx`. Every entry is verified
 against the brand's own live data before it goes in. `.claude/agents/catalog-auditor.md`
 holds the full verification method — **read it before touching catalog data.**
 
@@ -104,7 +104,7 @@ bundle and grep it. A merged PR is not a deployed PR.
 21 Aug, AvantLink called it thin earlier. Both were looking at a quiz plus a product
 list with nothing to read. Guides are the fix; get three or four up before reapplying.
 
-**198 of 235 Shop buttons** point at the brand's own product page. The rest fall back
+**198 of 234 Shop buttons** point at the brand's own product page. The rest fall back
 to a Google Shopping search — Atomic and Armada 403 every request, Salomon and Line
 are client-rendered, Scott returns 200 for slugs that do not exist.
 
