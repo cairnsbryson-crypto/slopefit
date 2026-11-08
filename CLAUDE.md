@@ -65,6 +65,13 @@ drift. If you change a formula, the guide changes too.
 |---|---|
 | `/guides/snowboard-length` | `recommendBoardLength()` — weight-led, `128 + kg × 0.4` |
 | `/guides/ski-length` | `recommendSkiLength()` — height-led |
+| `/guides/waterproofing` | Catalog K-ratings — only 30 of 132 items state one |
+| `/guides/layering` | Catalog `shell` field — ~4 shells per insulated piece |
+
+Both newer guides turn on the same point, and it came from Bryson both times:
+**where you ride changes the answer.** 10K covers an Ontario winter because the snow
+is cold and dry; spring slush is what argues for 20K. Cotton is fine at a local hill
+and a problem on a long wet day. Do not let these drift back into generic advice.
 
 Ski ability adjustments land a groomed skier at chin (beginner), mouth
 (intermediate), forehead (advanced), **their own height** (expert). Bryson supplied
@@ -124,9 +131,27 @@ mountains become giant triangles across a long page. The page's black lives on
 
 ## Where things stand
 
-**Affiliate: nothing is earning.** Skimlinks rejected the site as unsuitable on
-21 Aug, AvantLink called it thin earlier. Both were looking at a quiz plus a product
-list with nothing to read. Guides are the fix; get three or four up before reapplying.
+**Affiliate: nothing is earning yet, but both applications are moving.**
+
+Skimlinks rejected the site as unsuitable on 21 Aug and AvantLink called it thin
+earlier — both were looking at a quiz plus a product list with nothing to read.
+Four guides now exist (4,327 words), which was the agreed bar for reapplying.
+
+- **AvantLink CA, application 1679121** — site ownership verified 7 Nov via their
+  JS tag (added and removed again, PRs #52 and #53). A human review follows, said
+  to be 2–3 days. Their email says **submit only one application**, so chase by
+  replying to `affiliateapps@avantlink.com`, never by reapplying. `buildShopLink()`
+  already has a dormant AvantLink branch; it needs `AFFILIATE_IDS.avantlink` and
+  `retailer: "avantlink"` on the entries whose merchants approve.
+- **Skimlinks** — reapplied 8 Nov, but **no activation email ever arrived** in
+  either Gmail or Hotmail, so the submission probably failed. Suspects: the 500-char
+  limit on the description field, or their system swallowing a resubmission of a
+  domain it already rejected. Next move is replying to the 21 Aug rejection
+  (`approvals@skimlinks.com`) to reach a human, not refighting the form.
+
+Application answers used, keep these consistent across networks: type **publisher**,
+category **editorial**, traffic **organic search and direct** — no coupons, no paid,
+no email lists.
 
 **198 of 234 Shop buttons** point at the brand's own product page. The rest fall back
 to a Google Shopping search — Atomic and Armada 403 every request, Salomon and Line
