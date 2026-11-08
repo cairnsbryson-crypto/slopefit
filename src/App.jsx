@@ -2164,7 +2164,7 @@ export default function SlopeFit() {
             {currentKey === "ability" && (
               <div>
                 <h2 className="font-display font-black text-3xl uppercase tracking-wide mb-1">Where's your ability at?</h2>
-                <p className="text-sm text-white/50 mb-6">Rated the way runs are, on the mountain. Pick one.</p>
+                <p className="text-sm text-white/50 mb-6">Same markings the runs use — circle, square, diamond, double diamond.</p>
                 <div className="grid gap-3">
                   {ABILITY.map((a) => (<OptionCard key={a.id} selected={answers.ability === a.id} onClick={() => selectAnswer("ability", a.id)} title={a.label} desc={a.desc} icon={a.icon} iconFilled={a.filled} fillOpacity={a.fillOpacity} double={a.double} />))}
                 </div>
