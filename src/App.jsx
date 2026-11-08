@@ -187,6 +187,7 @@ const BUDGETS = [
 
 const NAV_TABS = [
   { id: "home", label: "Home" },
+  { id: "on-people", label: "The Gear" },
   { id: "how-it-works", label: "How It Works" },
   { id: "features", label: "What You Get" },
   { id: "why", label: "Why SlopeFit" },
@@ -1314,22 +1315,28 @@ function ElevationProgress({ step, total, sport }) {
 function MountainField() {
   const dots = Array.from({ length: 90 });
   return (
-    <div className="absolute inset-0 -z-10 bg-black overflow-hidden">
+    /* Fixed, not absolute. As an absolute child of the page wrapper this
+       stretched to the full scroll height - on the ~3,300px front page the
+       "mountains" became giant white triangles cutting across every
+       section. Pinning it to the viewport keeps the ridges mountain-sized
+       however long the page gets, and the opacities below are set to read
+       as texture behind the content rather than competing with it. */
+    <div className="fixed inset-0 -z-10 bg-black overflow-hidden pointer-events-none">
       <svg viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice" className="w-full h-full">
         <defs>
           <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="white" strokeWidth="0.6" /></pattern>
           <pattern id="hatch2" width="5" height="5" patternTransform="rotate(-45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="5" stroke="white" strokeWidth="0.5" /></pattern>
         </defs>
-        <g>{dots.map((_, i) => (<circle key={i} cx={(i * 131) % 1200} cy={(i * 67) % 420} r={i % 7 === 0 ? 1.6 : 0.9} fill="white" opacity={0.15 + ((i % 5) * 0.09)} />))}</g>
-        <polygon points="0,900 0,560 130,410 270,540 420,340 570,510 710,360 850,530 1000,380 1140,500 1200,430 1200,900" fill="white" opacity="0.05" />
-        <path d="M130,410 L150,450 M420,340 L445,385 M710,360 L735,405 M1000,380 L1025,420" stroke="white" strokeWidth="0.6" opacity="0.2" />
-        <polygon points="0,900 0,660 110,500 250,630 390,450 540,620 680,460 820,640 970,490 1110,630 1200,540 1200,900" fill="white" opacity="0.09" />
-        <polygon points="0,900 0,660 110,500 250,630 390,450 540,620 680,460 820,640 970,490 1110,630 1200,540 1200,900" fill="none" stroke="white" strokeWidth="1" opacity="0.25" />
-        <polygon points="0,900 0,760 90,600 200,720 330,540 470,710 610,550 750,730 880,580 1020,720 1140,620 1200,680 1200,900" fill="url(#hatch)" opacity="0.35" />
-        <polygon points="0,900 0,760 90,600 200,720 330,540 470,710 610,550 750,730 880,580 1020,720 1140,620 1200,680 1200,900" fill="none" stroke="white" strokeWidth="1.6" opacity="0.75" />
-        <path d="M90,600 L115,640 M330,540 L358,585 M610,550 L638,595 M880,580 L908,622" stroke="white" strokeWidth="0.7" opacity="0.4" />
-        <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="url(#hatch2)" opacity="0.5" />
-        <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="none" stroke="white" strokeWidth="1.4" opacity="0.9" />
+        <g>{dots.map((_, i) => (<circle key={i} cx={(i * 131) % 1200} cy={(i * 67) % 420} r={i % 7 === 0 ? 1.6 : 0.9} fill="white" opacity={0.07 + ((i % 5) * 0.05)} />))}</g>
+        <polygon points="0,900 0,560 130,410 270,540 420,340 570,510 710,360 850,530 1000,380 1140,500 1200,430 1200,900" fill="white" opacity="0.03" />
+        <path d="M130,410 L150,450 M420,340 L445,385 M710,360 L735,405 M1000,380 L1025,420" stroke="white" strokeWidth="0.6" opacity="0.10" />
+        <polygon points="0,900 0,660 110,500 250,630 390,450 540,620 680,460 820,640 970,490 1110,630 1200,540 1200,900" fill="white" opacity="0.03" />
+        <polygon points="0,900 0,660 110,500 250,630 390,450 540,620 680,460 820,640 970,490 1110,630 1200,540 1200,900" fill="none" stroke="white" strokeWidth="1" opacity="0.11" />
+        <polygon points="0,900 0,760 90,600 200,720 330,540 470,710 610,550 750,730 880,580 1020,720 1140,620 1200,680 1200,900" fill="url(#hatch)" opacity="0.16" />
+        <polygon points="0,900 0,760 90,600 200,720 330,540 470,710 610,550 750,730 880,580 1020,720 1140,620 1200,680 1200,900" fill="none" stroke="white" strokeWidth="1.6" opacity="0.20" />
+        <path d="M90,600 L115,640 M330,540 L358,585 M610,550 L638,595 M880,580 L908,622" stroke="white" strokeWidth="0.7" opacity="0.16" />
+        <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="url(#hatch2)" opacity="0.20" />
+        <polygon points="0,900 0,820 80,780 180,830 300,770 420,825 560,775 700,830 840,780 980,825 1120,780 1200,810 1200,900" fill="none" stroke="white" strokeWidth="1.4" opacity="0.26" />
       </svg>
     </div>
   );
@@ -1417,8 +1424,133 @@ function Swatch({ color, selected, disabled, onClick }) {
   );
 }
 
-function MountainHero({ sport }) {
-  return <div className="relative w-full h-[400px] overflow-hidden" />;
+/* The hero was an empty 400px div - a black box with a headline sitting on
+   nothing. It is now a real photograph with the page's own black gradient
+   layered over it, so the type stays legible at any crop and the image
+   dissolves into the page instead of ending on a hard edge.
+
+   object-position sits above centre because the subjects' heads are in the
+   upper third; a plain centre crop decapitates them on wide screens.
+
+   The photo is CC0 (public domain, no attribution required) - verified
+   against Wikimedia Commons' own licence metadata, not assumed. Anything
+   added here has to clear the same bar: brand product photography is fine
+   on a card that links to that brand, and is not fine as site furniture. */
+function MountainHero() {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <img
+        src="/photos/hero.jpg"
+        alt="Two snowboarders carrying their boards up a snow-covered road in early morning light"
+        width="1800"
+        height="1352"
+        loading="eager"
+        fetchpriority="high"
+        className="w-full h-full object-cover object-[center_32%]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/45 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
+    </div>
+  );
+}
+
+/* Catalog entries whose photograph shows the garment on a person rather
+   than flat on a backdrop. Hand-picked, because "has a model in it" is not
+   something the data records - it was read off the images themselves.
+
+   Two rules, both load-bearing:
+     - every id here must have a productUrl, so the card goes to the brand
+       rather than falling back to a Google Shopping search on the front
+       page of the site
+     - the image must be the brand's own photography of its own product,
+       which is the same relationship every catalog card already has
+   showcaseItems() drops anything that stops satisfying the first rule, so
+   a link removed later turns into one fewer card, not a dead one. */
+const SHOWCASE_IDS = ["jn4", "jn1", "jw11", "jn2", "jm21", "jw22", "jn10", "jn8"];
+
+function showcaseItems() {
+  const byId = new Map();
+  for (const items of Object.values(CATALOG)) for (const i of items) byId.set(i.id, i);
+  return SHOWCASE_IDS.map((id) => byId.get(id)).filter((i) => i && i.productUrl && i.image);
+}
+
+/* Real people in gear that is actually in the catalog. Read from CATALOG
+   rather than hardcoded, so a price or a photo corrected by the audit is
+   corrected here too - the front page cannot drift from the quiz. */
+function GearOnPeople({ currency }) {
+  const items = useMemo(() => showcaseItems(), []);
+  if (!items.length) return null;
+  return (
+    <div id="on-people" className="pt-2 pb-10 scroll-mt-28">
+      <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">On the hill</p>
+      <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-3">Real gear, on real people.</h2>
+      <p className="text-sm text-white/55 leading-relaxed max-w-lg mb-6">
+        Every piece below is in the catalog and matched by the quiz. The photos are the
+        brands' own — tap one to go straight to their page.
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {items.map((i) => (
+          <a
+            key={i.id}
+            href={i.productUrl}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="group block"
+          >
+            <div className="aspect-[3/4] overflow-hidden rounded-xl border border-white/16 bg-white/[0.04] group-hover:border-white/40 transition-colors">
+              <img
+                src={i.image}
+                alt={`${i.brand} ${i.name}`}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+              />
+            </div>
+            {/* min-h keeps the price on the same baseline across the grid -
+                product names run to one or two lines and without it the
+                second row's prices sit at different heights. */}
+            <p className="mt-2.5 text-[10px] uppercase tracking-widest text-white/45 font-bold">{i.brand}</p>
+            <p className="text-sm text-white/85 leading-snug line-clamp-2 min-h-[2.5rem]">{i.name}</p>
+            <p className="text-sm text-white/55">{formatPrice(i.price, currency)}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* A second photograph, carrying the link to the guides. The guides are the
+   only part of the site a search engine can actually index, so they get a
+   real panel on the front page rather than one more footer link. */
+function GuidesBand() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/16 my-10">
+      <img
+        src="/photos/ridge.jpg"
+        alt="A snow-covered ridgeline under a clear blue sky"
+        width="1800"
+        height="1350"
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover object-[center_60%]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
+      <div className="relative p-7 sm:p-9 max-w-md">
+        <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-2">Buying guides</p>
+        <h2 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-tight mb-3">
+          Want to know how the sizing works?
+        </h2>
+        <p className="text-sm text-white/70 leading-relaxed mb-5">
+          The same reasoning the quiz uses, written out in plain English — why boards size off your
+          weight, why skis size off your height, and where your build comes back in.
+        </p>
+        <a
+          href="/guides"
+          className="inline-flex items-center gap-2 bg-white text-black font-display font-bold uppercase tracking-wide text-sm px-6 py-3 rounded-lg hover:bg-white/85 transition-colors"
+        >
+          Read the guides <ChevronRight size={17} />
+        </a>
+      </div>
+    </div>
+  );
 }
 
 function Chip({ children }) {
@@ -1781,14 +1913,34 @@ export default function SlopeFit() {
         </button>
       )}
 
+      {/* Headline, subhead and call to action now sit on the photograph.
+          They used to be stacked underneath it in a separate block, which
+          is what made the page read as a list of panels rather than a
+          designed page - the first screen carried a title and nothing to
+          do. */}
       {phase === "intro" && (
-        <div id="home" className="relative">
-          <MountainHero sport={sport} />
-          <div className="absolute inset-0 flex flex-col justify-end">
-            <div className="max-w-3xl mx-auto px-6 pb-9 w-full">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/60 font-bold mb-3">{sport === "snowboard" ? "Eight questions" : "Seven questions"}. One coordinated setup.</p>
-              <h1 className="font-display font-black text-5xl sm:text-6xl leading-[0.95] uppercase tracking-tight text-white">Find your<br />perfect line.</h1>
+        <div id="home" className="relative flex items-end min-h-[34rem] sm:min-h-[40rem]">
+          <MountainHero />
+          <div className="relative w-full max-w-3xl mx-auto px-6 pt-28 pb-12">
+            <p className="text-xs uppercase tracking-[0.2em] text-white/70 font-bold mb-3">{sport === "snowboard" ? "Eight questions" : "Seven questions"}. One coordinated setup.</p>
+            <h1 className="font-display font-black text-5xl sm:text-6xl leading-[0.95] uppercase tracking-tight text-white">Find your<br />perfect line.</h1>
+            <p className="text-base sm:text-lg text-white/75 max-w-md mt-5 mb-7 leading-relaxed">
+              A quick style-and-fit quiz that turns your answers into a complete, color-matched{" "}
+              {sport === "snowboard" ? "snowboard setup — board to gloves" : "ski setup — skis to gloves"} — sized to you, ready to shop.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-display font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+                Start the fit check <ChevronRight size={20} />
+              </button>
+              <a href="/guides" className="font-display font-bold uppercase tracking-wide text-lg px-7 py-3.5 rounded-lg border border-white/35 text-white hover:bg-white/10 hover:border-white/60 transition-colors">
+                Read the guides
+              </a>
             </div>
+            <p className="text-sm text-white/60 mt-8 pt-6 border-t border-white/15 max-w-md leading-relaxed">
+              Matched against <span className="text-white font-semibold">{stats.brands} real brands</span> across{" "}
+              <span className="text-white font-semibold">{stats.products} products</span> and{" "}
+              <span className="text-white font-semibold">{stats.categories} gear categories</span> — every one checked against the brand's own listing.
+            </p>
           </div>
         </div>
       )}
@@ -1796,21 +1948,7 @@ export default function SlopeFit() {
       <div className="relative max-w-3xl mx-auto px-6 py-10">
         {phase === "intro" && (
           <div className="pb-6">
-            <div className="pt-2 pb-10">
-              <p className="text-base text-white/60 max-w-md mb-8 leading-relaxed">
-                A quick style-and-fit quiz that turns your answers into a complete, color-matched{" "}
-                {sport === "snowboard" ? "snowboard setup — board to gloves" : "ski setup — skis to gloves"} — ready to shop.
-              </p>
-              <button onClick={() => setPhase("quiz")} className="bg-white text-black font-display font-bold uppercase tracking-wide text-lg px-8 py-3.5 rounded-lg hover:bg-white/85 transition-all hover:-translate-y-0.5 flex items-center gap-2">
-                Start the fit check <ChevronRight size={20} />
-              </button>
-
-              <p className="text-sm text-white/45 mt-8 pt-6 border-t border-white/10 max-w-md leading-relaxed">
-                Matched against <span className="text-white font-semibold">{stats.brands} real brands</span> across{" "}
-                <span className="text-white font-semibold">{stats.products} products</span> and{" "}
-                <span className="text-white font-semibold">{stats.categories} gear categories</span> — not a generic catalog.
-              </p>
-            </div>
+            <GearOnPeople currency={currency} />
 
             <div id="how-it-works" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">How it works</p>
@@ -1845,6 +1983,8 @@ export default function SlopeFit() {
                 ))}
               </div>
             </div>
+
+            <GuidesBand />
 
             <div id="why" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Why SlopeFit</p>
@@ -1912,6 +2052,12 @@ export default function SlopeFit() {
                 <br />
                 Not affiliated with or endorsed by any brand shown. Prices and availability change —
                 confirm on the retailer's page before buying.
+                <br />
+                {/* CC0 waives attribution, so this is courtesy rather than
+                    obligation - but a named source is also the quickest
+                    answer to "where did these photos come from?". */}
+                Product photography belongs to the brands shown. Mountain photography is public
+                domain (CC0).
               </p>
             </footer>
           </div>
