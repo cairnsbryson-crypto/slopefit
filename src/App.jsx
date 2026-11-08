@@ -1588,7 +1588,7 @@ function GuidesBand() {
 function OurDays() {
   const shots = [
     { src: "/photos/day-bay.jpg", w: 720, h: 960, alt: "A skier stopped at the top of a run, looking out over a frozen bay and the town below" },
-    { src: "/photos/day-night.jpg", w: 480, h: 640, alt: "A snowboarder standing on a floodlit run during a night session, mist blowing across the slope" },
+    { src: "/photos/day-night.jpg", w: 900, h: 1200, alt: "A snowboarder standing on a floodlit run during a night session, mist blowing across the slope" },
   ];
   return (
     <div id="our-days" className="py-10 border-t border-white/10 scroll-mt-28">
