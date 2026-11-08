@@ -1432,24 +1432,49 @@ function Swatch({ color, selected, disabled, onClick }) {
    object-position sits above centre because the subjects' heads are in the
    upper third; a plain centre crop decapitates them on wide screens.
 
-   The photo is CC0 (public domain, no attribution required) - verified
-   against Wikimedia Commons' own licence metadata, not assumed. Anything
-   added here has to clear the same bar: brand product photography is fine
-   on a card that links to that brand, and is not fine as site furniture. */
+   Licences are verified against Wikimedia Commons' own metadata, never
+   assumed. This one is CC BY 2.0 (Arthur Mouratidis, via Flickr), which
+   allows commercial use and cropping as long as it is credited and the
+   change noted - both are in the footer. The ridge photo is CC0.
+
+   Anything added here has to clear the same bar: brand product
+   photography is fine on a card that links to that brand, and is not
+   fine as site furniture. */
 function MountainHero() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <img
-        src="/photos/hero.jpg"
-        alt="Two snowboarders carrying their boards up a snow-covered road in early morning light"
-        width="1800"
-        height="1352"
-        loading="eager"
-        fetchpriority="high"
-        className="w-full h-full object-cover object-[center_32%]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/45 to-black" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
+      {/* Two crops of the same photograph rather than one. A phone's hero
+          is taller than it is wide, so object-cover on the wide file
+          discards about two thirds of its width and blows the rider up
+          until the board cuts straight through the headline. The portrait
+          crop puts the rider in the top third with clean sky underneath
+          for the type, and is a third of the bytes. */}
+      <picture>
+        <source media="(max-width: 639px)" srcSet="/photos/hero-portrait.jpg" width="900" height="1045" />
+        <img
+          src="/photos/hero.jpg"
+          alt="A snowboarder grabbing their board mid-air against a deep blue sky"
+          width="1800"
+          height="900"
+          loading="eager"
+          fetchpriority="high"
+          className="w-full h-full object-cover object-top sm:object-[center_42%]"
+        />
+      </picture>
+      {/* Two gradients doing different jobs: the vertical one blends the
+          photo into the page's black so it has no hard bottom edge, the
+          horizontal one buys contrast under the headline on the left while
+          leaving the right side of the picture open. Kept light enough
+          that the photograph still reads as a photograph - the first pass
+          was heavy enough to flatten it to a dark rectangle. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/35 to-transparent" />
+      {/* Phone only. The hero's copy block is nearly as tall as the hero
+          itself on a narrow screen, so the rider and the headline cannot
+          be kept apart - this darkens the lower two thirds so the picture
+          reads as backdrop behind the type instead of colliding with it.
+          On sm+ there is room for both and this is off. */}
+      <div className="absolute inset-0 sm:hidden bg-gradient-to-b from-transparent via-black/55 to-black" />
     </div>
   );
 }
@@ -1921,7 +1946,7 @@ export default function SlopeFit() {
       {phase === "intro" && (
         <div id="home" className="relative flex items-end min-h-[34rem] sm:min-h-[40rem]">
           <MountainHero />
-          <div className="relative w-full max-w-3xl mx-auto px-6 pt-28 pb-12">
+          <div className="relative w-full max-w-3xl mx-auto px-6 pt-44 sm:pt-28 pb-12">
             <p className="text-xs uppercase tracking-[0.2em] text-white/70 font-bold mb-3">{sport === "snowboard" ? "Eight questions" : "Seven questions"}. One coordinated setup.</p>
             <h1 className="font-display font-black text-5xl sm:text-6xl leading-[0.95] uppercase tracking-tight text-white">Find your<br />perfect line.</h1>
             <p className="text-base sm:text-lg text-white/75 max-w-md mt-5 mb-7 leading-relaxed">
@@ -2053,11 +2078,20 @@ export default function SlopeFit() {
                 Not affiliated with or endorsed by any brand shown. Prices and availability change —
                 confirm on the retailer's page before buying.
                 <br />
-                {/* CC0 waives attribution, so this is courtesy rather than
-                    obligation - but a named source is also the quickest
-                    answer to "where did these photos come from?". */}
-                Product photography belongs to the brands shown. Mountain photography is public
-                domain (CC0).
+                {/* The hero is CC BY 2.0, which makes this credit an actual
+                    licence condition rather than a courtesy - including
+                    noting that the image was cropped. */}
+                Product photography belongs to the brands shown. Hero photograph by Arthur
+                Mouratidis, cropped, used under{" "}
+                <a
+                  href="https://creativecommons.org/licenses/by/2.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-white"
+                >
+                  CC BY 2.0
+                </a>
+                . Ridge photograph is public domain.
               </p>
             </footer>
           </div>
