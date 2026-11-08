@@ -1578,6 +1578,38 @@ function GuidesBand() {
   );
 }
 
+/* The owner's own photographs, from his own days on the hill. Worth a
+   block of its own rather than being mixed in with the stock imagery:
+   the one thing a scraped affiliate site cannot produce is evidence that
+   a person actually rides, and that is the claim this section makes.
+
+   Both are 3:4 so they sit level. Neither shows a recognisable face,
+   which is deliberate - these are real people, not models. */
+function OurDays() {
+  const shots = [
+    { src: "/photos/day-bay.jpg", w: 720, h: 960, alt: "A skier stopped at the top of a run, looking out over a frozen bay and the town below" },
+    { src: "/photos/day-night.jpg", w: 480, h: 640, alt: "A snowboarder standing on a floodlit run during a night session, mist blowing across the slope" },
+  ];
+  return (
+    <div id="our-days" className="py-10 border-t border-white/10 scroll-mt-28">
+      <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Our own days</p>
+      <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-3">Built by someone who rides.</h2>
+      <p className="text-sm text-white/55 leading-relaxed max-w-lg mb-6">
+        This isn't a scraped feed. Every product is checked against the brand's own listing before it
+        goes in, and the sizing advice comes off real days on the hill rather than a spec sheet — ours
+        included.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        {shots.map((s) => (
+          <div key={s.src} className="aspect-[3/4] overflow-hidden rounded-xl border border-white/16 bg-white/[0.04]">
+            <img src={s.src} alt={s.alt} width={s.w} height={s.h} loading="lazy" className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Chip({ children }) {
   return <span className="text-xs uppercase tracking-wide font-semibold border border-white/25 bg-white/[0.04] rounded-full px-3 py-1.5 text-white/80">{children}</span>;
 }
@@ -2011,6 +2043,8 @@ export default function SlopeFit() {
 
             <GuidesBand />
 
+            <OurDays />
+
             <div id="why" className="py-10 border-t border-white/10 scroll-mt-28">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50 font-bold mb-2">Why SlopeFit</p>
               <h2 className="font-display font-black text-3xl uppercase tracking-tight mb-6">Built to actually match.</h2>
@@ -2091,7 +2125,7 @@ export default function SlopeFit() {
                 >
                   CC BY 2.0
                 </a>
-                . Ridge photograph is public domain.
+                . Ridge photograph is public domain. The on-hill photographs are our own.
               </p>
             </footer>
           </div>
