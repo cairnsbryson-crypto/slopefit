@@ -85,6 +85,30 @@ git push --force-with-lease
 Verify changes against the **live site**, not just the build — fetch the deployed
 bundle and grep it. A merged PR is not a deployed PR.
 
+## Photography on the site
+
+Three rules, all learned the expensive way:
+
+- **Brand product photos are fine on a card that links to that brand** — the same
+  relationship every catalog card has. They are *not* fine as site furniture
+  (hero, section backgrounds, decoration).
+- **Site photography must be CC0 and verified, not assumed.** Check the source's
+  own licence metadata. Wikimedia Commons answers this through its API
+  (`AttributionRequired`, `Restrictions`). Lives in `public/photos/`.
+- **rawpixel is watermarked** on every preview path, including `image_*` where the
+  mark is faint enough to miss at thumbnail size. Unsplash is behind a bot wall.
+  Working sources: Openverse's API filtered to `pd.w.org` and `upload.wikimedia.org`
+  (send a real User-Agent and go slowly — it 429s).
+
+The front page's "Real gear, on real people" grid reads `SHOWCASE_IDS` out of
+`CATALOG`, so it can't drift from the quiz. Every id listed must have a
+`productUrl`; `showcaseItems()` drops any that lose one.
+
+`MountainField` is the decorative ridge backdrop and **must stay `fixed`**. As an
+absolute child of the page wrapper it stretches to the full scroll height and its
+mountains become giant triangles across a long page. The page's black lives on
+`html/body` in `index.css`, not on that element.
+
 ## Traps that have cost real time
 
 - **`vercel.json` is strict-schema validated.** A `"//"` comment key fails the whole
