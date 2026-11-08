@@ -1300,10 +1300,20 @@ function SkierMarker({ sport }) {
 function ElevationProgress({ step, total, sport }) {
   const pct = total <= 0 ? 0 : (step / total) * 100;
   return (
-    <div className="relative w-full h-14 mb-8 select-none">
+    <div className="relative w-full h-16 mb-8 select-none">
+      {/* pathLength normalises the polyline to 100 units whatever its real
+          geometry, so the drawn head lands exactly on the percentage. The
+          previous dasharray guessed the path at 460 units against an
+          actual ~445, which left the line and the skier drifting apart as
+          the quiz progressed. */}
       <svg viewBox="0 0 400 60" preserveAspectRatio="none" className="w-full h-full">
-        <polyline points="0,55 40,30 80,45 130,10 180,38 230,20 280,42 330,15 400,35" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="3" />
-        <polyline points="0,55 40,30 80,45 130,10 180,38 230,20 280,42 330,15 400,35" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeDasharray="1000" strokeDashoffset={1000 - (pct / 100) * 460} style={{ transition: "stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)" }} />
+        <polyline points="0,55 40,30 80,45 130,10 180,38 230,20 280,42 330,15 400,35" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="3.5" strokeLinejoin="round" />
+        <polyline
+          points="0,55 40,30 80,45 130,10 180,38 230,20 280,42 330,15 400,35"
+          fill="none" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+          pathLength="100" strokeDasharray="100" strokeDashoffset={100 - pct}
+          style={{ transition: "stroke-dashoffset 0.55s cubic-bezier(0.4,0,0.2,1)", filter: "drop-shadow(0 0 5px rgba(255,255,255,0.45))" }}
+        />
       </svg>
       <div className="absolute -top-2 flex flex-col items-center" style={{ left: `calc(${pct}% - 13px)`, transition: "left 0.55s cubic-bezier(0.4,0,0.2,1)" }}>
         <SkierMarker sport={sport} />
@@ -2133,7 +2143,12 @@ export default function SlopeFit() {
         )}
 
         {phase === "quiz" && (
-          <div key={currentKey} style={{ animation: "slopefitIn 0.35s ease" }}>
+          /* Every question used to end mid-screen with 300px of black
+             under it, which read as a page that had failed to finish
+             loading. Centring the step in the space the header leaves
+             means short questions sit in the middle of the screen and
+             long ones (colours, budget) still grow and scroll normally. */
+          <div key={currentKey} className="min-h-[calc(100vh-17rem)] flex flex-col justify-center" style={{ animation: "slopefitIn 0.35s ease" }}>
             <ElevationProgress step={stepIndex} total={STEPS.length - 1} sport={sport} />
 
             {currentKey === "gender" && (
