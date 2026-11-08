@@ -1589,6 +1589,7 @@ function OurDays() {
   const shots = [
     { src: "/photos/day-bay.jpg", w: 720, h: 960, alt: "A skier stopped at the top of a run, looking out over a frozen bay and the town below" },
     { src: "/photos/day-night.jpg", w: 900, h: 1200, alt: "A snowboarder standing on a floodlit run during a night session, mist blowing across the slope" },
+    { src: "/photos/day-lift.jpg", w: 900, h: 1200, alt: "Tracks cut across a floodlit run at night, with a chairlift running up into the mist" },
   ];
   return (
     <div id="our-days" className="py-10 border-t border-white/10 scroll-mt-28">
@@ -1599,7 +1600,7 @@ function OurDays() {
         goes in, and the sizing advice comes off real days on the hill rather than a spec sheet — ours
         included.
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {shots.map((s) => (
           <div key={s.src} className="aspect-[3/4] overflow-hidden rounded-xl border border-white/16 bg-white/[0.04]">
             <img src={s.src} alt={s.alt} width={s.w} height={s.h} loading="lazy" className="w-full h-full object-cover" />
