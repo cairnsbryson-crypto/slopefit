@@ -3,7 +3,7 @@ import {
   Circle, Square, Diamond, Mountain, Snowflake, Trees, Compass, Layers, Wind,
   Wallet, Ruler, Shirt, Eye, HardHat, Hand, Palette, ListChecks, Sparkles,
   User, Users, ChevronRight, ChevronLeft, ShoppingBag, RotateCcw, Lock, Check,
-  X, Search, Crown, ChevronDown, Globe,
+  X, Search, Crown, ChevronDown, Globe, BookOpen,
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
@@ -187,6 +187,17 @@ const BUDGETS = [
 
 const NAV_TABS = [
   { id: "home", label: "Home" },
+  /* The only tab that leaves the page. Every other entry scrolls to a
+     section of the single-page app; the guides are real documents at
+     their own URLs, so this one carries an href and renders as a link.
+     It sits in the nav because that is the first place anyone looks -
+     the hero button, the mid-page panel and the footer were the only
+     ways in, and all three need you to already be scrolling.
+
+     Second, not last: this row scrolls horizontally on a phone, and from
+     sixth place the link sat off the right edge on a 390px screen -
+     invisible on exactly the devices that most need a shortcut. */
+  { id: "guides", label: "Guides", href: "/guides" },
   { id: "on-people", label: "The Gear" },
   { id: "how-it-works", label: "How It Works" },
   { id: "features", label: "What You Get" },
@@ -1957,9 +1968,13 @@ export default function SlopeFit() {
         </div>
         {phase === "intro" && (
           <div className="max-w-3xl mx-auto px-6 pb-3 flex items-center gap-5 overflow-x-auto">
-            {NAV_TABS.map((t) => (
-              <button key={t.id} onClick={() => scrollToSection(t.id)} className="text-xs uppercase tracking-widest font-semibold text-white/55 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">{t.label}</button>
-            ))}
+            {NAV_TABS.map((t) =>
+              t.href ? (
+                <a key={t.id} href={t.href} className="text-xs uppercase tracking-widest font-bold text-white/85 hover:text-white transition-colors whitespace-nowrap flex-shrink-0 border-b border-white/30 hover:border-white pb-0.5">{t.label}</a>
+              ) : (
+                <button key={t.id} onClick={() => scrollToSection(t.id)} className="text-xs uppercase tracking-widest font-semibold text-white/55 hover:text-white transition-colors whitespace-nowrap flex-shrink-0">{t.label}</button>
+              )
+            )}
           </div>
         )}
         <RidgeDivider />
@@ -2623,6 +2638,13 @@ export default function SlopeFit() {
               <button onClick={restart} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><RotateCcw size={16} /> Start over</button>
               <button onClick={() => { setStepIndex(0); setPhase("quiz"); }} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ChevronLeft size={16} /> Change my answers</button>
               <button onClick={goToAbout} className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><ListChecks size={16} /> How we picked this</button>
+              {/* The results screen is the highest-intent moment on the
+                  site - someone has just been handed a board length and a
+                  jacket and is deciding whether to trust it. That is
+                  exactly when the sizing and waterproofing guides are
+                  worth reading, and until now there was no way to reach
+                  them from here at all. */}
+              <a href="/guides" className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><BookOpen size={16} /> Read the guides</a>
             </div>
           </div>
         )}
