@@ -359,7 +359,7 @@ const CATALOG = {
     { id: "sw21", name: "RC4 Worldcup GS Women (26/27)", brand: "Fischer", price: 1350, gender: ["w"], ability: ["advanced", "expert"], terrain: ["groomed", "ice"], style: ["race"], colors: ["lime"], tier: "premium", productUrl: "https://www.fischersports.com/rc4-worldcup-gs-women-m-plate/9002972930157", image: "https://www.fischersports.com/media/1620x2160/1d/e9/30/1726236336/a03023_rc4_wc_gs_women_01.png" },
   ],
   jacket: [
-    { id: "jm3", name: "Twin Line 30K Snow Jacket — Olive Beige", brand: "Ninety Roll", price: 275, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive", "sand"], tier: "value", fit: "baggy", shell: true, productUrl: "https://ninetyroll.co/product/twin-line-30k-snow-jacket-olive-beige/", image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0168-819x1024.jpg" },
+    { id: "jm3", name: "Twin Line 30K Snow Jacket — Olive Beige", brand: "Ninety Roll", price: 275, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["olive", "sand"], tier: "value", fit: "baggy", shell: true, productUrl: "https://ninetyroll.co/product/twin-line-30k-snow-jacket-olive-beige/", modelImage: "https://ninetyroll.co/wp-content/uploads/2025/08/Louka-eben-x-90roll-studio-39-scaled.jpg", image: "https://ninetyroll.co/wp-content/uploads/2025/08/B05A0168-819x1024.jpg" },
     { id: "jm4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 350, gender: ["m"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, productUrl: "https://www.beyondmedals.com/en-CA/product/fullzip-jacket-2l-black", image: "https://beyondmedals.centracdn.net/client/dynamic/images/593_bd93c29c21-bmaw25-flat-fullzip-jacket-black-web.jpg" },
     { id: "jm20", name: "Baggy Waterproof Snow Jacket", brand: "GSOU SNOW", price: 259, gender: ["m"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, productUrl: "https://www.gsousnow.com/products/mens-black-alpine-shield-3l-asymmetric-insulated-ski-jacket-gs-ujk2727-blk", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_M_01.jpg?width=800" },
     { id: "jm23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 259, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, productUrl: "https://www.gsousnow.com/products/mens-purple-alpine-shield-3l-asymmetric-insulated-ski-jacket-gs-ujk2727-prp", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_M_01.jpg?width=800" },
@@ -367,7 +367,7 @@ const CATALOG = {
     { id: "jm21", name: "Off White Minimal Multi-Pocket Snow Jacket", brand: "GSOU SNOW", price: 148, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["white"], tier: "mid", fit: "baggy", shell: false, productUrl: "https://www.gsousnow.com/products/mens-off-white-minimal-multi-pocket-snow-jacket-gs-ujk2664-bce", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2664-BCE_M_01.jpg?width=800" },
     { id: "jm22", name: "Army Green Insulated Snow Jacket", brand: "GSOU SNOW", price: 158, gender: ["m"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["forest"], tier: "value", fit: "baggy", shell: false, productUrl: "https://www.gsousnow.com/products/mens-army-green-recycled-minimalist-insulated-snow-jacket-gs-ujk2689-arg", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2689-ARG_M_01.jpg?width=800" },
     { id: "jm11", name: "Sabre Insulated Jacket (26/27)", brand: "Arc'teryx", price: 650, gender: ["m"], ability: ["advanced", "expert"], terrain: ["backcountry", "powder"], style: ["freeride"], colors: ["black"], tier: "premium", fit: "regular", shell: true, productUrl: "https://arcteryx.com/us/en/shop/mens/sabre-insulated-jacket-9913", image: "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000009913-Sabre-Insulated-Jacket-Black-Front-View.jpg" },
-    { id: "jw3", name: "Twin Line 30K Snow Jacket — Stone White", brand: "Ninety Roll", price: 275, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, productUrl: "https://ninetyroll.co/product/twin-line-30k-snow-jacket-stone-white/", image: "https://ninetyroll.co/wp-content/uploads/2026/07/B05A0088-819x1024.jpg" },
+    { id: "jw3", name: "Twin Line 30K Snow Jacket — Stone White", brand: "Ninety Roll", price: 275, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street"], colors: ["cream"], tier: "value", fit: "baggy", shell: true, productUrl: "https://ninetyroll.co/product/twin-line-30k-snow-jacket-stone-white/", modelImage: "https://ninetyroll.co/wp-content/uploads/2026/07/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20260714195341_818_2-2-scaled.jpg", image: "https://ninetyroll.co/wp-content/uploads/2026/07/B05A0088-819x1024.jpg" },
     { id: "jw4", name: "Fullzip 2L Snow Jacket", brand: "Beyond Medals", price: 350, gender: ["w"], ability: ["intermediate", "advanced", "expert"], terrain: ["park", "powder"], style: ["street", "retro"], colors: ["black"], tier: "mid", fit: "baggy", shell: true, productUrl: "https://www.beyondmedals.com/en-CA/product/fullzip-jacket-2l-black", image: "https://beyondmedals.centracdn.net/client/dynamic/images/593_bd93c29c21-bmaw25-flat-fullzip-jacket-black-web.jpg" },
     { id: "jw20", name: "Baggy Snowboard Jacket", brand: "GSOU SNOW", price: 259, gender: ["w"], ability: ["beginner", "intermediate", "advanced", "expert"], terrain: ["park", "groomed"], style: ["street"], colors: ["black"], tier: "value", fit: "baggy", shell: true, productUrl: "https://www.gsousnow.com/products/womens-black-alpine-shield-3l-asymmetric-insulated-ski-jacket-gs-ujk2727-blk", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-BLK_F_01.jpg?width=800" },
     { id: "jw23", name: "Purple Waterproof Snow Jacket", brand: "GSOU SNOW", price: 259, gender: ["w"], ability: ["beginner", "intermediate", "advanced"], terrain: ["park", "groomed"], style: ["street", "retro"], colors: ["purple"], tier: "value", fit: "baggy", shell: true, productUrl: "https://www.gsousnow.com/products/womens-purple-alpine-shield-3l-asymmetric-insulated-ski-jacket-gs-ujk2727-prp", image: "https://cdn.shopify.com/s/files/1/2030/8605/files/GS-UJK2727-PRP_F_01.jpg?width=800" },
@@ -1511,13 +1511,22 @@ function MountainHero() {
      - the image must be the brand's own photography of its own product,
        which is the same relationship every catalog card already has
    showcaseItems() drops anything that stops satisfying the first rule, so
-   a link removed later turns into one fewer card, not a dead one. */
-const SHOWCASE_IDS = ["jm11", "jw11", "jn4", "jf16", "jw10", "jn2", "jf6", "jn1"];
+   a link removed later turns into one fewer card, not a dead one.
+
+   `modelImage` is an optional second photo, used only here. Some brands
+   lead a product page with a flat lay and keep the on-model shots further
+   down the gallery - Ninety Roll does, which is why they looked
+   ineligible for this grid until the gallery was checked. The flat lay
+   stays as `image` because it is the better picture in a small square
+   result card, where a full-length model shrinks to nothing; this grid is
+   tall and wants the person. Both come from the same product page, so the
+   card still shows what it links to. */
+const SHOWCASE_IDS = ["jm11", "jw11", "jw3", "jn4", "jw10", "jm3", "jf16", "jf6"];
 
 function showcaseItems() {
   const byId = new Map();
   for (const items of Object.values(CATALOG)) for (const i of items) byId.set(i.id, i);
-  return SHOWCASE_IDS.map((id) => byId.get(id)).filter((i) => i && i.productUrl && i.image);
+  return SHOWCASE_IDS.map((id) => byId.get(id)).filter((i) => i && i.productUrl && (i.modelImage || i.image));
 }
 
 /* Real people in gear that is actually in the catalog. Read from CATALOG
@@ -1545,7 +1554,7 @@ function GearOnPeople({ currency }) {
           >
             <div className="aspect-[3/4] overflow-hidden rounded-xl border border-white/16 bg-white/[0.04] group-hover:border-white/40 transition-colors">
               <img
-                src={i.image}
+                src={i.modelImage || i.image}
                 alt={`${i.brand} ${i.name}`}
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
