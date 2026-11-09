@@ -3,7 +3,7 @@ import {
   Circle, Square, Diamond, Mountain, Snowflake, Trees, Compass, Layers, Wind,
   Wallet, Ruler, Shirt, Eye, HardHat, Hand, Palette, ListChecks, Sparkles,
   User, Users, ChevronRight, ChevronLeft, ShoppingBag, RotateCcw, Lock, Check,
-  X, Search, Crown, ChevronDown, Globe, BookOpen,
+  X, Search, Crown, ChevronDown, Globe, BookOpen, Share2,
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
@@ -1632,6 +1632,53 @@ function OurDays() {
   );
 }
 
+/* There was no way to send a result to anyone, which for a quiz is the
+   whole growth mechanic - someone finishes, likes what they got, and has
+   nothing to tap.
+
+   Native share sheet where the browser has one (that is most phones, and
+   it is the only route that reaches iMessage, WhatsApp or a TikTok bio),
+   clipboard everywhere else. A share the user cancels rejects with
+   AbortError, which is not a failure and must not fall through to the
+   copy path, or dismissing the sheet silently copies instead. */
+function ShareSetup({ sport }) {
+  const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const url = "https://www.slopefit.co/";
+  const kit = sport === "snowboard" ? "board" : "skis";
+  const text = `I just got a full ${sport === "snowboard" ? "snowboard" : "ski"} setup matched to me in about a minute - ${kit}, jacket, pants, goggles, helmet and gloves.`;
+
+  const flash = (set) => { set(true); setTimeout(() => set(false), 2200); };
+
+  const onShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "SlopeFit", text, url });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      flash(setCopied);
+    } catch {
+      flash(setFailed);
+    }
+  };
+
+  return (
+    <button
+      onClick={onShare}
+      className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide border border-white/30 hover:border-white/70 hover:bg-white/10 text-white px-4 py-2 rounded-full transition-colors"
+    >
+      {copied ? <Check size={16} /> : <Share2 size={16} />}
+      {copied ? "Link copied" : failed ? "Copy failed" : "Share my setup"}
+    </button>
+  );
+}
+
 function Chip({ children }) {
   return <span className="text-xs uppercase tracking-wide font-semibold border border-white/25 bg-white/[0.04] rounded-full px-3 py-1.5 text-white/80">{children}</span>;
 }
@@ -2645,6 +2692,7 @@ export default function SlopeFit() {
                   worth reading, and until now there was no way to reach
                   them from here at all. */}
               <a href="/guides" className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-white/50 hover:text-white transition-colors"><BookOpen size={16} /> Read the guides</a>
+              <ShareSetup sport={sport} />
             </div>
           </div>
         )}
